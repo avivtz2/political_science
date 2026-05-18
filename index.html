@@ -1,0 +1,1329 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>בגרות במדעי המדינה - לומדה אינטראקטיבית</title>
+    <style>
+        :root {
+            --primary: #1e40af;
+            --primary-light: #3b82f6;
+            --secondary: #f1f5f9;
+            --text-main: #0f172a;
+            --text-muted: #475569;
+            --border: #cbd5e1;
+            --success: #16a34a;
+            --danger: #dc2626;
+            --bg-card: #ffffff;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--secondary);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        header {
+            background-color: var(--primary);
+            color: white;
+            padding: 1.5rem 1rem;
+            text-align: center;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        header h1 { margin: 0; font-size: 1.8rem; }
+        header p { margin: 0.5rem 0 0 0; font-size: 1rem; opacity: 0.9; }
+
+        /* Screens */
+        #selection-screen {
+            max-width: 600px;
+            margin: 3rem auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            text-align: center;
+        }
+
+        #learning-screen { display: none; max-width: 900px; margin: 0 auto; }
+
+        .topic-selector {
+            width: 100%;
+            padding: 0.8rem;
+            font-size: 1.1rem;
+            border-radius: 8px;
+            border: 2px solid var(--border);
+            margin: 1.5rem 0;
+            font-family: inherit;
+        }
+
+        /* Navigation Tabs */
+        nav {
+            display: flex;
+            justify-content: center;
+            background-color: white;
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        nav button {
+            background: none;
+            border: none;
+            padding: 1rem 1.5rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s ease;
+        }
+
+        nav button:hover { color: var(--primary-light); }
+        nav button.active { border-bottom-color: var(--primary); color: var(--primary); }
+
+        main { padding: 2rem 1rem; }
+
+        .module {
+            display: none;
+            animation: fadeIn 0.4s ease-in-out;
+        }
+        .module.active { display: block; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Cards */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .card h2, .card h3 { color: var(--primary); margin-top: 0; }
+
+        /* Buttons */
+        .btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            transition: background-color 0.2s;
+        }
+        .btn:hover { background-color: var(--primary-light); }
+        
+        .btn-success { background-color: var(--success); }
+        .btn-success:hover { background-color: #15803d; }
+        
+        .btn-danger { background-color: var(--danger); }
+        .btn-danger:hover { background-color: #b91c1c; }
+
+        .btn-outline {
+            background-color: transparent;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+        }
+        .btn-outline:hover { background-color: var(--secondary); }
+
+        .btn-large { padding: 1rem 2rem; font-size: 1.2rem; border-radius: 8px; }
+
+        .learning-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        /* Summary Module */
+        .item-container {
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .item-container:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+        
+        .qa-item {
+            background-color: var(--secondary);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 0.8rem;
+            border-right: 4px solid var(--primary-light);
+        }
+        .qa-item h4 { margin: 0 0 0.5rem 0; color: var(--text-main); font-size: 1.1rem; }
+        .qa-item p { margin: 0; }
+
+        .full-summary-content {
+            display: none;
+            margin-top: 1rem;
+            padding: 1.5rem;
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            line-height: 1.7;
+            font-size: 1.05rem;
+        }
+        .full-summary-content p { margin-top: 0; margin-bottom: 1rem; }
+
+        /* Comparison Module */
+        .comparison-controls { display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem; align-items: center; }
+        select { padding: 0.5rem; border-radius: 6px; border: 1px solid var(--border); font-family: inherit; font-size: 1rem; min-width: 200px; }
+        .comparison-table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        .comparison-table th, .comparison-table td { border: 1px solid var(--border); padding: 1rem; text-align: right; vertical-align: top; }
+        .comparison-table th { background-color: var(--secondary); color: var(--primary); font-weight: bold; width: 33%; }
+
+        /* Flashcards Module */
+        .flashcard-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+            text-align: center;
+        }
+        
+        .flashcard-container {
+            perspective: 1000px;
+            width: 100%;
+            max-width: 600px;
+            height: 350px;
+            margin: 1rem 0;
+        }
+        
+        .flashcard {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1);
+            transform-style: preserve-3d;
+        }
+        
+        .flashcard.is-flipped { transform: rotateY(180deg); }
+        
+        .flashcard-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            box-sizing: border-box;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .flashcard-front {
+            background-color: white;
+            border: 3px solid var(--primary);
+        }
+        .flashcard-front h3 {
+            font-size: 2.2rem;
+            color: var(--primary);
+            margin: 0;
+        }
+        
+        .flashcard-back {
+            background-color: var(--primary);
+            color: white;
+            transform: rotateY(180deg);
+            overflow-y: auto;
+        }
+        .flashcard-back h3 {
+            color: white;
+            font-size: 1.5rem;
+            margin-top: 0;
+            border-bottom: 2px solid rgba(255,255,255,0.3);
+            padding-bottom: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        .flashcard-back p { font-size: 1.3rem; line-height: 1.5; margin: 0; }
+
+        .fc-controls {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            justify-content: center;
+            width: 100%;
+            max-width: 600px;
+        }
+        .fc-controls button { flex: 1; min-width: 150px; padding: 1rem; font-size: 1.1rem; }
+        
+        .fc-empty-state { display: none; text-align: center; padding: 3rem 1rem; }
+        .fc-empty-state h2 { color: var(--success); }
+
+        /* Practice Module */
+        .practice-meta {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: inline-block;
+            background: var(--secondary);
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            font-weight: bold;
+        }
+        textarea {
+            width: 100%;
+            height: 200px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            font-family: inherit;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            resize: vertical;
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+        textarea:focus { outline: none; border-color: var(--primary-light); box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2); }
+        .rubric-area {
+            margin-top: 1.5rem;
+            border-top: 2px dashed var(--border);
+            padding-top: 1.5rem;
+            background-color: #f8fafc;
+            border-radius: 0 0 12px 12px;
+        }
+        .rubric-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 0.8rem;
+            background: white;
+            padding: 0.8rem;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+        }
+        .rubric-item input[type="checkbox"] { margin-left: 1rem; margin-top: 0.3rem; transform: scale(1.3); cursor: pointer; }
+        .rubric-item label { cursor: pointer; flex: 1; font-size: 1.1rem; }
+        .feedback-message { margin-top: 1rem; font-weight: bold; color: var(--success); text-align: center; font-size: 1.2rem; }
+
+        @media (max-width: 600px) {
+            .comparison-table th, .comparison-table td { display: block; width: 100%; text-align: right; }
+            .comparison-table th { margin-top: 1rem; }
+            .comparison-controls { flex-direction: column; align-items: stretch; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>בגרות במדעי המדינה</h1>
+        <p>לומדה חכמה: הבנה, שינון ותרגול ממוקד</p>
+    </header>
+
+    <div id="selection-screen">
+        <h2>במה נתמקד היום?</h2>
+        <p>בחר/י נושא למידה לקבלת חומרי קריאה, כרטיסיות ושאלות בגרות מותאמות אישית.</p>
+        
+        <select id="topic-select" class="topic-selector">
+            <optgroup label="למידה כללית">
+                <option value="all">כל החומר (מאמרים והוגים)</option>
+                <option value="all_articles">כל מאמרי החובה</option>
+                <option value="all_thinkers">כל ההוגים (פילוסופים)</option>
+            </optgroup>
+            <optgroup label="הוגים">
+                <option value="plato">אפלטון</option>
+                <option value="aristotle">אריסטו</option>
+                <option value="machiavelli">מקיאוולי</option>
+                <option value="hobbes">תומאס הובס</option>
+                <option value="locke">ג'ון לוק</option>
+                <option value="rousseau">ז'אן ז'אק רוסו</option>
+                <option value="hegel">גיאורג הגל</option>
+            </optgroup>
+            <optgroup label="מאמרי חובה">
+                <option value="peri">י' פרי / הדמוקרטיה - עקרונות ומאפיינים</option>
+                <option value="maciver">ר' מקאיבר / מקור הציות</option>
+                <option value="yishai">י' ישי / קבוצות אינטרס</option>
+                <option value="neuberger">ב' נויברגר / דמוקרטיות יציבות ולא יציבות</option>
+                <option value="eisenstadt">ש"נ איזנשטדט / תכונות יסוד של המדינה המודרנית</option>
+                <option value="friedrich">פרידריך ובז'ז'ינסקי / הדיקטטורה הטוטליטרית</option>
+                <option value="goren">ד' גורן / כלי התקשורת והדמוקרטיה</option>
+                <option value="shamir">מ' שמיר / סובלנות פוליטית</option>
+                <option value="dahl">ר' דאל / האדם הפוליטי</option>
+            </optgroup>
+        </select>
+
+        <button class="btn btn-large" onclick="startLearning()">התחל למידה ממוקדת</button>
+    </div>
+
+    <div id="learning-screen">
+        <main>
+            <div class="learning-header">
+                <h2 id="current-focus-title" style="margin: 0; color: var(--primary);"></h2>
+                <button class="btn btn-outline" onclick="backToSelection()">חזור לבחירת נושא</button>
+            </div>
+
+            <nav style="margin-bottom: 2rem; border-radius: 8px; overflow: hidden;">
+                <button onclick="showModule('understanding')" id="btn-understanding" class="active">1. סיכום והבנה</button>
+                <button onclick="showModule('memorization')" id="btn-memorization">2. כרטיסיות שינון</button>
+                <button onclick="showModule('practice')" id="btn-practice">3. תרגול בגרויות</button>
+            </nav>
+
+            <!-- מודול 1: הבנה -->
+            <section id="understanding" class="module active">
+                <div class="card" id="comparison-card" style="display: none; margin-bottom: 2rem; border: 2px solid var(--primary-light);">
+                    <h2>השוואת הוגים חכמה</h2>
+                    <p>הכלי מאפשר השוואה רק בין הוגים שחולקים מאפיינים וצירי השוואה משותפים.</p>
+                    <div class="comparison-controls">
+                        <div>
+                            <label for="thinker1" style="display:block; margin-bottom:0.5rem;">הוגה ראשון:</label>
+                            <select id="thinker1" onchange="updateThinker2Options()"></select>
+                        </div>
+                        <div>
+                            <label for="thinker2" style="display:block; margin-bottom:0.5rem;">הוגה להשוואה:</label>
+                            <select id="thinker2" onchange="renderComparison()" disabled>
+                                <option value="">-- בחר הוגה ראשון קודם --</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="comparison-result"></div>
+                </div>
+
+                <div class="card">
+                    <h2 id="summary-main-title">סיכום החומר</h2>
+                    <p id="understanding-empty" style="display:none; text-align:center;">לא נמצאו סיכומים לנושא זה.</p>
+                    <div id="summary-container"></div>
+                </div>
+            </section>
+
+            <!-- מודול 2: שינון -->
+            <section id="memorization" class="module">
+                <div class="card flashcard-wrapper">
+                    <div id="fc-active-state" style="width: 100%; display: flex; flex-direction: column; align-items: center;">
+                        <p style="margin-top:0; font-size:1.1rem;">קרא/י את המושג שעל הכרטיסייה, אמור/י את ההגדרה לעצמך בקול, ולאחר מכן לחץ/י על הכפתור לבדיקה.</p>
+                        
+                        <div class="flashcard-container">
+                            <div class="flashcard" id="flashcard">
+                                <div class="flashcard-face flashcard-front">
+                                    <h3 id="fc-term">טוען...</h3>
+                                </div>
+                                <div class="flashcard-face flashcard-back">
+                                    <h3 id="fc-term-back">טוען...</h3>
+                                    <p id="fc-def">טוען...</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="fc-controls" id="fc-btn-reveal">
+                            <button class="btn btn-large" onclick="revealCard()">הצג הגדרה</button>
+                        </div>
+                        
+                        <div class="fc-controls" id="fc-btn-actions" style="display: none; margin-top: 1rem;">
+                            <button class="btn btn-success" onclick="markCard(true)">זכרתי! (למושג הבא)</button>
+                            <button class="btn btn-danger" onclick="markCard(false)">לא זכרתי (הצג שוב בהמשך)</button>
+                        </div>
+                        
+                        <p id="card-counter" style="color: var(--text-muted); font-size: 1rem; margin-top: 1.5rem; font-weight:bold;"></p>
+                    </div>
+
+                    <div id="fc-empty-state" class="fc-empty-state">
+                        <h2>מעולה! סיימת לעבור על כל המושגים בנושא.</h2>
+                        <p>חזרה פעילה היא המפתח להצלחה בבחינה.</p>
+                        <button class="btn btn-large btn-outline" onclick="initFlashcards()" style="margin-top: 1rem;">התחל את הסט מחדש</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- מודול 3: תרגול -->
+            <section id="practice" class="module">
+                <div class="card">
+                    <p id="practice-empty" style="display:none; text-align:center;">אין כרגע שאלות בגרות ספציפיות מקוטלגות לנושא זה.</p>
+                    <div id="practice-content">
+                        <button class="btn" onclick="generateQuestion()" style="margin-bottom: 1rem;">הגרל שאלה אקראית מהנושא</button>
+                        
+                        <div id="practice-area" style="display: none; margin-top: 1.5rem;">
+                            <span class="practice-meta" id="question-meta"></span>
+                            <h3 id="question-text" style="color: var(--text-main); line-height: 1.4;"></h3>
+                            <textarea id="student-answer" placeholder="הקלד/י את תשובתך המלאה והמנומקת כאן... (זכור להשתמש במושגים מהכרטיסיות: ציין, הצג, הדגם/בסס, הסבר)"></textarea>
+                            
+                            <button class="btn btn-outline" id="check-btn" onclick="showRubric()">סיימתי לכתוב - הצג מחוון לבדיקה עצמית</button>
+                            
+                            <div id="rubric-area" class="rubric-area" style="display: none;">
+                                <h4 style="margin-top:0; color: var(--primary);">מחוון להערכה:</h4>
+                                <p>האם שילבת את כל הנקודות הבאות? סמן/י 'וי' ליד מה שמופיע בתשובתך:</p>
+                                <div id="rubric-items"></div>
+                                <div id="feedback-msg" class="feedback-message"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        const appData = {
+            articles: [
+                {
+                    id: "peri",
+                    title: "יורם פרי / הדמוקרטיה - עקרונות ומאפיינים",
+                    qas: [
+                        { q: "מהי הביקורת של יורם פרי על הגדרת לינקולן לדמוקרטיה?", a: "ההגדרה של לינקולן ('שלטון העם, על ידי העם, למען העם') היא פורמלית בלבד ואינה מתקיימת במציאות. 'על ידי העם' - לא מתקיים כי השלטון מנוהל על ידי נציגים (מיעוט נבחר), ו'למען העם' - לא ברור מהו אינטרס העם, שכן החברה מורכבת מקבוצות בעלות אינטרסים מנוגדים שאי אפשר לרצות את כולם." },
+                        { q: "כיצד מתמודד פרי עם המושג 'הרצון הכללי' של רוסו?", a: "פרי טוען שהמושג 'הרצון הכללי' הוא מסוכן, משום שאין באמת 'רצון כללי' אחיד שאפשר להסכים עליו. שימוש במושג זה אפשר בעבר למשטרים רודניים (טוטליטריים) לטעון שהם יודעים מהו 'הרצון הכללי' ובכך לדכא את העם ולא לכבד רצונות חלקיים." },
+                        { q: "מהם ארבעת המאפיינים של דמוקרטיה מהותית לפי פרי?", a: "1. ביקורת (ביקורת תקופתית בבחירות וביקורת שוטפת של תקשורת/מוסדות). 2. היחיד במרכז (האדם כיצור רציונלי שזכאי לנהל את חייו). 3. זכויות אדם (שמירה על חיים, חירות, קניין). 4. זכויות מיעוטים (הגנה על מיעוט מפני 'עריצות הרוב')." }
+                    ],
+                    fullSummary: `<p>המאמר בוחן את המשפט שטוען שדמוקרטיה היא "שלטון של העם, ע"י העם ולמען העם", שהוצג בנאום גטיסברג של הנשיא לינקולן.</p>
+                                  <p>פרי מבקר את ההגדרה הקלאסית (הפורמלית) ומציג את הגישה הליברלית-מהותית. לטענתו, בדמוקרטיה העקיפה המודרנית העם אינו השולט בפועל (אלא נציגיו), ולא ניתן לפעול "למען העם" כיוון שהעם מורכב מקבוצות בעלות אינטרסים מנוגדים.</p>
+                                  <p>לכן, פרי מזהיר משימוש במושג "הרצון הכללי" (של רוסו), כי רודנים השתמשו בו כדי לטעון שהם יודעים מה טוב לעם. במקום זאת, פרי מדגיש שדמוקרטיה מהותית מבוססת על כך שהעם הוא <strong>מקור הסמכות</strong>, ומכאן נגזרים 4 עקרונות חובה: 1. זכות הביקורת על השלטון. 2. העמדת היחיד (האדם) במרכז. 3. שמירה על זכויות האדם הטבעיות. 4. הגנה על זכויות מיעוטים.</p>
+                                  <p>לסיכום, פרי מציע הגדרה חלופית: "הדמוקרטיה היא צורת ממשל שבה רוב בני האדם משפיעים ברוב התחומים על גורלם".</p>`
+                },
+                {
+                    id: "maciver",
+                    title: "רוברט מקאיבר / מקור הציות",
+                    qas: [
+                        { q: "מהן שתי הסיבות המוסריות (הערכיות) שבגללן יש לציית לחוק?", a: "1. לגיטימיות מקור החוק (המחוקק נבחר כחוק ויש לו סמכות). 2. תוכנו של החוק (החוק ראוי, מייצג ערכים הגיוניים המוסכמים על החברה כמו איסור רצח או פגיעה בזולת)." },
+                        { q: "אילו גורמים מעשיים מניעים אזרחים לציית לחוק בחיי היומיום?", a: "חשש מעונש, ציות מתוך שגרה והרגל, כבוד למחוקק, הכרה עקרונית בצורך בסדר (למנוע אנרכיה), וסולידריות חברתית (כולם מצייתים אז גם אני מציית כדי לא לפגוע בכלל)." },
+                        { q: "מהם גבולות הציות? באילו מקרים אזרח יבחר שלא לציית לחוק?", a: "כאשר יש התנגשות בין חוקי המדינה למוסר ולמצפון עליון, כאשר המדינה מדכאת מסורת/דת של האזרח, או כאשר האזרח מרגיש מנוכר, מקופח כלכלית/חברתית ואינו חש חלק מן המדינה." },
+                        { q: "כיצד מסביר מקאיבר את התפתחות 'מיתוס הסמכות' מהמשפחה למדינה?", a: "מערכת היחסים במשפחה (סמכות, שיפוט, כפייה, כבוד) היא הבסיס. היחסים התרחבו מהמשפחה לשבט ואז למדינה הגדולה. האדם יצר 'מיתוס' שמעניק לשלטון הרחב סמכות לגיטימית לקבל החלטות עבורו, ממש כפי שהיה במשפחה." }
+                    ],
+                    fullSummary: `<p>המאמר עוסק בשאלת הציות לחוק - מדוע עלינו לציית, ומדוע אנו מצייתים בפועל.</p>
+                                  <p>מבחינה ערכית, חובה לציית לחוק אם מקורו לגיטימי ואם תוכנו ראוי ומוסרי. עם זאת, בפועל, אנו מצייתים בגלל שילוב של פחד מעונש, שגרה, כבוד, צורך בסדר וסולידריות עם שאר האזרחים.</p>
+                                  <p>מקאיבר עוסק ב"גבולות הציות": ציות אינו טוטאלי. כאשר אדם חש שהחוק סותר באופן עמוק את ערכיו המוסריים (סרבנות מצפון), את דתו, או כשהוא מרגיש מודר ומקופח על ידי המדינה (למשל, עניים מרודים או מיעוטים נרדפים) - רמת הציות שלו תרד עד כדי מרד.</p>
+                                  <p>לבסוף, מקאיבר מתחקה אחר מקור הסמכות המדינית וטוען שהיא התפתחה מהמבנה המשפחתי. המדינה היא הרחבה של היררכיית המשפחה, והאזרחים נזקקו לבנות "מיתוס של סמכות" כדי להצדיק את ציותם לשלטון במדינה הגדולה.</p>`
+                },
+                {
+                    id: "yishai",
+                    title: "יעל ישי / קבוצות אינטרס בישראל",
+                    qas: [
+                        { q: "מהי קבוצת אינטרס וכיצד היא מחזקת את הדמוקרטיה?", a: "קבוצת אינטרס היא התארגנות אזרחית לקידום אינטרס משותף והשפעה על השלטון. היא מחזקת את הדמוקרטיה כי היא מאפשרת מעורבות אזרחית בין הבחירות, ביטוי משאלות הציבור, ועוזרת לשלטון לאתר כשלים במדיניותו." },
+                        { q: "כיצד נבדלות קבוצות אינטרס לפי מימד הארגון (רמת המיסוד)?", a: "1. קבוצה אנומית (התארגנות ספונטנית וזמנית ללא מיסוד). 2. לא-מאוגדת (התארגנות לאורך זמן אך ללא מוסדות רשמיים). 3. מוסדית (פועלת בתוך מוסד של המדינה, למשל שדולה בכנסת). 4. מאוגדת (ארגון רשמי ופרטי עם תקציב וחברים רשומים)." },
+                        { q: "מה ההבדל בין אינטרס פרטי לאינטרס ציבורי?", a: "אינטרס פרטי נועד לקדם רק את חברי הקבוצה (למשל, העלאת שכר לרופאים), בעוד שאינטרס ציבורי נועד להטיב עם כלל החברה (למשל, זכויות אזרח, שמירה על איכות הסביבה)." },
+                        { q: "אילו גורמים משפיעים על מידת ההצלחה של קבוצת אינטרס?", a: "1. משאבים (כסף ופעילים). 2. תמיכה בצמרת השלטונית. 3. עיתוי הפעולה (למשל, לא בזמן מלחמה). 4. אהדה ודעת קהל. 5. מידת האיום (הפעלת לחץ כלכלי/תקשורתי). 6. האם הבעיה פתירה על ידי הממשלה." }
+                    ],
+                    fullSummary: `<p>המאמר מנתח את פעילותן של קבוצות אינטרס בחברה הישראלית. קבוצות אלו הן מנוע חשוב בדמוקרטיה משום שהן מספקות זירה להשתתפות פוליטית פעילה, מעבר להצבעה בקלפי, ומאפשרות "פידבק" למקבלי ההחלטות על מדיניותם.</p>
+                                  <p>ישי מחלקת את הקבוצות לפי רמת המיסוד שלהן (מאנומיות וספונטניות ועד מאוגדות ומבוססות), ולפי סוג האינטרס (פרטי מול ציבורי). לרוב, לקבוצות המקדמות אינטרס פרטי קל יותר לגייס משאבים מחבריהן.</p>
+                                  <p>המאמר עומד על שיטות הפעולה של הקבוצות, שמגוונות משתדלנות (לובינג) חוקית ועד להפגנות, שביתות, ולעיתים אף אלימות והפרת סדר ציבורי (חסימת כבישים) - שיטות שעלולות גם להחליש את הדמוקרטיה אם הן כופות את רצון המיעוט על הרוב.</p>
+                                  <p>מידת הצלחתן של קבוצות אינטרס בישראל גדלה עם השנים, והיא תלויה במשאבים הכלכליים שלהן, בתמיכה פוליטית שהן זוכות לה מהצמרת, באהדה ציבורית ובעיתוי שבו הן בוחרות לפעול.</p>`
+                },
+                {
+                    id: "neuberger",
+                    title: "בנימין נויברגר / דמוקרטיות יציבות ולא יציבות",
+                    qas: [
+                        { q: "כיצד מגדיר נויברגר דמוקרטיה יציבה?", a: "דמוקרטיה שיש בה שני תנאים מרכזיים: 1. ותק: היא שורדת תקופה ארוכה ומתמשכת ברציפות. 2. כושר עמידה: הוכיחה את יכולתה לעמוד ולהתמודד בהצלחה עם משברים פוליטיים, צבאיים או כלכליים קשים, מבלי לקרוס." },
+                        { q: "מהו 'מבחן האפקטיביות' וכיצד הוא משפיע על יציבות המשטר?", a: "אפקטיביות היא יעילות השלטון בפתרון בעיות היום-יום וניהול משברים. אם השלטון אינו אפקטיבי (למשל אינו מונע אבטלה או חוסר בטחון), האזרחים מאבדים אמון בדמוקרטיה, מה שעלול להוביל לעליית 'מנהיג חזק' ורודני (כפי שקרה ברפובליקת ויימאר)." },
+                        { q: "מדוע היעדר קיטוב אידיאולוגי והסכמה לאומית חשובים ליציבות?", a: "כאשר הפערים בין הקבוצות קיצוניים (קיטוב עמוק), גובר הסיכוי לאלימות ומלחמת אזרחים (למשל, רצח פוליטי). קונצנזוס על 'כללי המשחק' (הסכמה לאומית רחבה) ושיתוף פעולה בין האליטות מאפשרים לנהל מחלוקות בדרכי שלום." },
+                        { q: "מהו תפקידם של 'ארגונים וולונטריים' ביציבות הדמוקרטיה?", a: "קיומה של חברה אזרחית חזקה וארגוני התנדבות מפזר את הכוח הפוליטי, מונע ריכוזיות יתר של המדינה, ומחזק את הקשר והאכפתיות של האזרח כלפי החברה בה הוא חי." }
+                    ],
+                    fullSummary: `<p>נויברגר בוחן היסטורית מדוע דמוקרטיות מסוימות (כמו בארה"ב או בריטניה) מחזיקות מעמד, בעוד אחרות (כמו רפובליקת ויימאר בגרמניה, או איטליה בעבר) קרסו והפכו לדיקטטורות.</p>
+                                  <p>הוא קובע כי כדי שדמוקרטיה תיקרא 'יציבה' עליה להתקיים זמן רב ולהוכיח יכולת עמידה במשברים קשים. הוא מונה 8 גורמים המשפיעים על היציבות:</p>
+                                  <ol>
+                                    <li><strong>לגיטימציה:</strong> רוב העם חייב לתמוך מהותית בשיטה הדמוקרטית.</li>
+                                    <li><strong>מבחן האפקטיביות:</strong> השלטון חייב לספק פתרונות ממשיים ויעילים לבעיות (אחרת העם יחפש רודן שיעשה "סדר").</li>
+                                    <li><strong>פיתוח כלכלי-חברתי:</strong> הבטחת רמת חיים וחינוך לדמוקרטיה.</li>
+                                    <li><strong>היעדר קיטוב פוליטי:</strong> פערים קיצוניים מדי יובילו לאלימות פוליטית.</li>
+                                    <li><strong>הסכמה לאומית (קונצנזוס):</strong> הסכמה רחבה לפחות על כללי המשחק הדמוקרטי.</li>
+                                    <li><strong>שיתוף פעולה:</strong> יכולת של אליטות ומפלגות להתפשר (כמו בממשלות אחדות).</li>
+                                    <li><strong>ויסות עומס המשברים:</strong> אירועים קשים רבים בבת אחת יכולים למוטט כל משטר.</li>
+                                    <li><strong>חברה אזרחית:</strong> ארגונים וולונטריים שמפזרים כוח ומגבירים סולידריות.</li>
+                                  </ol>`
+                },
+                {
+                    id: "eisenstadt",
+                    title: "ש\"נ איזנשטדט / תכונות יסוד של המדינה המודרנית",
+                    qas: [
+                        { q: "מהם המאפיינים המרכזיים של המדינה המודרנית (ההבדל מהעבר)?", a: "השלטון מרוכז ואחיד טריטוריאלית. הכוח הפוליטי מפוזר לכלל האזרחים (שוויון זכויות/בחירות) ולא רק לאצולה. קיימת אבחנה בין פוליטיקאים לבין פקידים (בירוקרטיה מקצועית), והמדינה מתערבת ומפקחת כמעט על כל תחומי החיים (כלכלה, חינוך)." },
+                        { q: "כיצד מסבירים את התפתחות המדינה המודרנית?", a: "קיימים שני הסברים: 1. הסבר מטריאליסטי-חומרי: תוצר של המהפכה התעשייתית, קפיטליזם ועיור. 2. הסבר אידיאליסטי-רעיוני: תוצר של הופעת רעיונות חדשים כמו חילון (השלטון מהעם ולא מהאל) ורציונליות." },
+                        { q: "מהן שלוש בעיות היסוד של המדינה המודרנית?", a: "1. בעיית שיתוף הפעולה (ניכור בין האזרח לשלטון הגדול). 2. בעיית 'שביל הזהב' (המתח בין הצורך של הממשלה לתכנן לטווח ארוך לבין הלחץ להיבחר בטווח הקצר). 3. פוליטיזציה מול עצמאות (האיזון בין מעורבות המדינה לקיום חברה אזרחית חופשית)." },
+                        { q: "מהם שלושת ההסדרים והמוסדות שנועדו לפתור את בעיות המדינה?", a: "1. חוקה: מסמכת את כללי המשחק ומגינה על זכויות. 2. מפלגות: מתווכות בין האזרח לשלטון ומספקות נציגות ויציבות. 3. קבוצות התאגדות (קבוצות אינטרס): מגבירות מעורבות ויוצרות חברה אזרחית חופשית החוצצת מול השלטון." }
+                    ],
+                    fullSummary: `<p>המאמר מתאר מבחינה סוציולוגית מה הופך מדינה ל"מודרנית" בהשוואה למדינות העבר (פיאודליות או אבסולוטיות).</p>
+                                  <p>במדינה המודרנית ישנו פרדוקס: מצד אחד הריכוזיות גדלה (החוק חל באופן שווה על כולם, והמדינה מעורבת בחינוך, רווחה וכלכלה). מצד שני, קיימת דמוקרטיזציה של הכוח - לאזרחים יש שוויון זכויות ויכולת להשפיע. בנוסף, נוצר מנגנון בירוקרטי מקצועי שמפריד בין המנהיג הפוליטי לבין הפקיד המבצע.</p>
+                                  <p>התפתחות זו (המוסברת על ידי שינויים חומריים בתעשייה ושינויים רעיוניים בתפיסת הרציונליות) הובילה לשלוש בעיות יסוד: תחושת ניכור מצד האזרח (בעיית שיתוף הפעולה), קושי בתכנון לטווח ארוך עקב בחירות תכופות (שביל הזהב), וסכנה להשתלטות המדינה על כל חלקה בחברה.</p>
+                                  <p>כדי לשמור על יציבות ולהגן על הדמוקרטיה, המדינה המודרנית פיתחה שלושה מנגנונים מרכזיים: כינון <strong>חוקה</strong> (קונסטיטוציה) המגבילה את השלטון, קיום <strong>מפלגות פוליטיות</strong> המהוות גשר בין העם לשלטון, ועידוד <strong>התאגדויות חברתיות</strong> (קבוצות אינטרס) המאפשרות לאזרחים לפעול יחד בחברה האזרחית.</p>`
+                },
+                {
+                    id: "friedrich",
+                    title: "פרידריך ובז'ז'ינסקי / הדיקטטורה הטוטליטרית",
+                    qas: [
+                        { q: "מדוע דיקטטורה טוטליטרית היא בהכרח תופעה פוליטית מודרנית?", a: "משום שרק בעידן המודרני קיימת טכנולוגיה (תקשורת המונים, אמצעי האזנה ומעקב, רכבות ומטוסי קרב, בירוקרטיה מחשבית) המאפשרת לממשל לפקח, לעקוב ולשלוט בכל היבט בחייהם של מיליוני אזרחים ברזולוציה יומיומית." },
+                        { q: "מהם שלושת המאפיינים הראשונים (פוליטיים-אידיאולוגיים) של התסמונת?", a: "1. אידיאולוגיה מפותחת חובקת-כל (שאיפה אוטופית ליצור עולם חדש ואדם חדש). 2. מפלגת המון יחידה (שנשלטת לרוב על ידי דיקטטור אחד). 3. מערכת של טרור פיזי ופסיכולוגי (המופעלת על ידי המשטרה החשאית נגד אויבי משטר, אמיתיים או מדומים)." },
+                        { q: "מהם שלושת המאפיינים הטכנולוגיים-מבניים של התסמונת?", a: "4. מונופול מוחלט על אמצעי התקשורת (הכוונת המידע והתעמולה). 5. מונופול על נשק צבאי. 6. כלכלה מנוהלת וריכוזית (הכפפת השוק והייצור לטובת המדינה)." },
+                        { q: "מה היעד העליון של המשטר הטוטליטרי כלפי החברה?", a: "לפרק ולהרוס לחלוטין את 'חברת ההמונים' הפלורליסטית ואת החברה האזרחית, כך שלא יישארו מוסדות עצמאיים (משפחה, כנסייה, מועדונים). האזרח הופך לאטום מבודד התלוי רק במפלגה ובמנהיג." }
+                    ],
+                    fullSummary: `<p>המאמר מגדיר באופן חד ומדויק מה מבדיל דיקטטורה טוטליטרית (כמו גרמניה הנאצית או ברית המועצות הסטליניסטית) מסתם אוטוקרטיה או רודנות רגילה של העבר.</p>
+                                  <p>הכותבים מדגישים שטוטליטריות אפשרית רק בעידן המודרני, שכן היא דורשת טכנולוגיה מתקדמת ליישום שליטה טוטאלית (מוחלטת) בכל תחומי החיים. הם מציגים מודל הנקרא "תסמונת" בת שש תכונות. חובה שכל השש יתקיימו יחד כדי שהמשטר ייחשב טוטליטרי:</p>
+                                  <ol>
+                                    <li><strong>אידיאולוגיה:</strong> תפיסת עולם כוללת שמבטיחה עתיד מושלם ודורשת נאמנות מוחלטת.</li>
+                                    <li><strong>מפלגה יחידה:</strong> מפלגת המונים בראשות דיקטטור אחד (שליט עליון).</li>
+                                    <li><strong>טרור:</strong> משטרה חשאית המטילה אימה, מחסלת התנגדות ומנטרת מחשבות.</li>
+                                    <li><strong>תקשורת:</strong> מונופול ממשלתי על הרדיו, העיתונות והמידע (תעמולה מתמדת).</li>
+                                    <li><strong>נשק:</strong> ריכוז הכוח הצבאי כולו בידי המפלגה.</li>
+                                    <li><strong>כלכלה:</strong> ניהול מרכזי של כל אמצעי הייצור, העבודה והמשאבים לטובת מטרות המדינה.</li>
+                                  </ol>
+                                  <p>המטרה הסופית היא חיסול החברה האזרחית ויצירת שליטה פסיכולוגית ופיזית מלאה על הפרט.</p>`
+                },
+                {
+                    id: "goren",
+                    title: "דינה גורן / כלי התקשורת והדמוקרטיה בישראל",
+                    qas: [
+                        { q: "מדוע לעיתונות החופשית יש תפקיד קריטי בדמוקרטיה?", a: "משום שדמוקרטיה מתבססת על הסכמת האזרחים (בחירות). כדי שהאזרח יקבל החלטות מושכלות ויפקח על נבחריו, הוא חייב גישה חופשית למידע מהימן, ובמה להביע בה את דעותיו. ללא מידע אין משמעות לחופש הבחירה." },
+                        { q: "מהו דגם 'העיתונות מטעם' (העיתונות המגויסת) שאפיין את ישראל בעבר?", a: "זהו דגם שבו התקשורת שיתפה פעולה בגלוי עם השלטון, במיוחד בנושאי חוץ וביטחון שנתפסו כ'פרות קדושות'. מתוך מחויבות למפעל הציוני, העיתונאים צנזרו את עצמם (למשל במסגרת 'ועדת העורכים') כדי לא להביך את המדינה." },
+                        { q: "מה הוביל למעבר לדגם 'העימות' (כלב השמירה) בישראל?", a: "אובדן האמון הציבורי בהנהגה בעקבות מחדל מלחמת יום הכיפורים (1973). העיתונות הבינה שעליה להיות ביקורתית, לוחמת וחוקרת, לאמץ מודלים מהעולם המערבי (דוגמת פרשת ווטרגייט), ולא לקבל את הצהרות הממסד כעובדות מוגמרות." },
+                        { q: "מהי החשיבות של בג\"ץ 'קול העם' לעיתונות בישראל?", a: "מכיוון שבישראל נשארו חוקים מנדטוריים נוקשים (כמו פקודת העיתונות), בג\"ץ קול העם (1953) יצר תקדים משפטי עצום. הוא קבע שחופש הביטוי יוגבל רק אם יש 'ודאות קרובה' לסכנה ממשית לשלום הציבור, ובכך הגן בגופו על חופש העיתונות." }
+                    ],
+                    fullSummary: `<p>המאמר סוקר את התפתחות יחסי הגומלין בין התקשורת לשלטון במדינת ישראל הדמוקרטית. העיתונות אינה רק כלי בידור, אלא מנגנון קריטי לאספקת מידע (החיוני להכרעה דמוקרטית) ולפיקוח על הממשל.</p>
+                                  <p>התפתחות העיתונות בישראל עברה שני שלבים מרכזיים:</p>
+                                  <p><strong>1. דגם "העיתונות מטעם" (דגם התיאום):</strong> בעשורים הראשונים, עיתונאים ופוליטיקאים שיתפו פעולה. ענייני צבא, בטחון וחוץ נחשבו ל"פרות קדושות" שהעיתונות נמנעה מלבקר, מתוך מחויבות עמוקה לפרויקט הציוני. מוסדות כמו "ועדת העורכים" מיסדו הסדרות של צנזורה מרצון.</p>
+                                  <p><strong>2. דגם "העימות" (עיתונות מדווחת ומבקרת):</strong> בעקבות מחדלי מלחמת יום הכיפורים, אובדן התמימות וחילופי דורות של עיתונאים, החלה העיתונות לתפקד כ"כלב שמירה" עוקצני המבקר את השלטון ומפרסם תחקירים, בדומה למקובל בארה"ב.</p>
+                                  <p>המאמר מציין גם את האתגרים המשפטיים: למרות חוקים מנדטוריים מחמירים, בג"ץ פסק (הלכת "קול העם") להגן על חופש העיתונות במבחן ה"ודאות הקרובה". עם זאת, גורן מזהירה כי לעיתים קרובות הציבור הישראלי עצמו עוין את התקשורת ואינו מעריך מספיק את חשיבות חופש העיתונות לדמוקרטיה.</p>`
+                },
+                {
+                    id: "shamir",
+                    title: "מיכל שמיר / סובלנות פוליטית בישראל",
+                    qas: [
+                        { q: "מהי סובלנות פוליטית ומה מהותה בדמוקרטיה?", a: "סובלנות פוליטית היא הנכונות להעניק לאדם או קבוצה (המחזיקים בדעות מנוגדות, חריגות או אף מקוממות) את מלוא הזכויות הדמוקרטיות: חופש ביטוי, התאגדות, הפגנה והשתתפות בבחירות. בלי סובלנות אין הגנה על מיעוטים או על האופוזיציה." },
+                        { q: "מה ההבדל בין דוקטרינת 'הסכנה הברורה והמיידית' לבין 'גישת האיזון'?", a: "בדוקטרינת 'הסכנה הברורה' (בארה\"ב), הסובלנות היא ערך כמעט מוחלט, ויש להגביל ביטוי רק כשיש ודאות עליונה לאלימות מיידית. לעומת זאת, 'גישת האיזון' (שמקובלת בישראל ובאירופה) טוענת שסובלנות היא ערך חשוב, אך יש לאזן אותו מול ערכים אחרים (כמו שלום הציבור או קיום המדינה - 'דמוקרטיה מתגוננת')." },
+                        { q: "כיצד מאופיינת הסובלנות בחברה הישראלית על פי מחקרה של שמיר?", a: "החברה הישראלית סובלת ממידה גבוהה של חוסר סובלנות, במיוחד לאור הסכסוך הישראלי-ערבי והקיטוב הפוליטי סביב השטחים. חוסר הסובלנות מתבטא לעיתים בדה-לגיטימציה של יריבים ובאלימות פיזית (כגון רצח אמיל גרינצוויג או יצחק רבין)." },
+                        { q: "מהו תפקיד ההנהגה (האליטות ומערכת המשפט) בהקשר של סובלנות?", a: "להנהגה הפוליטית ולבג\"ץ יש כוח רב: הם יכולים להסית ולהעמיק את השסעים (כפי שקרה בבחירות 1981), או לחלופין לשמש גורם מרסן, לחנך את הציבור לקבלת האחר, ולקבוע תקדימים משפטיים השומרים על זכויות המיעוט." }
+                    ],
+                    fullSummary: `<p>מיכל שמיר עוסקת באחד מעמודי התווך של הדמוקרטיה המהותית: סובלנות פוליטית. להיות סובלני אין פירושו להסכים עם האחר, אלא לתת לו את הזכות המלאה להביע את עמדתו ולהתמודד על השלטון למרות חוסר ההסכמה.</p>
+                                  <p>שמיר מציגה את הדילמה הדמוקרטית (הידועה גם כ'פרדוקס הסובלנות'): עד כמה דמוקרטיה צריכה להיות סובלנית כלפי קבוצות שרוצות להרוס אותה? הגישה האמריקאית קיצונית ותומכת בחופש כמעט מוחלט (מבחן הסכנה הברורה והמיידית), בעוד שישראל ואירופה מעדיפות את "גישת האיזון", לפיה מותר לפסול מפלגות קיצוניות כדי להגן על המדינה ("דמוקרטיה מתגוננת").</p>
+                                  <p>במחקרה היא מראה שהציבור הישראלי אינו סובלני במיוחד. השסעים העמוקים, המתח הביטחוני, ומלחמות (כמו מלחמת ששת הימים או לבנון הראשונה) הקצינו את חוסר הסובלנות כלפי השמאל וכלפי המיעוט הערבי.</p>
+                                  <p>שמיר מסכמת ומטילה אחריות כבדה על האליטה הפוליטית ועל בית המשפט העליון. התבטאויות של פוליטיקאים יכולות לעודד אלימות ודה-לגיטימציה, ומנגד - מנהיגות אחראית ופסיקות בג"ץ יכולות לרסן יצרים ולשמור על מסגרת חיים דמוקרטית תקינה.</p>`
+                },
+                {
+                    id: "dahl",
+                    title: "רוברט דאל / האדם הפוליטי",
+                    qas: [
+                        { q: "מהן ארבע השכבות של המעורבות הפוליטית לפי רוברט דאל?", a: "1. הבלתי פוליטיים (אדישים לחלוטין). 2. השכבה הפוליטית (מעורבים ברמה בסיסית: הצבעה, הפגנות קטנות). 3. מבקשי השררה (פעילים המבקשים להשפיע ולהשיג כוח). 4. השליטים (אלו שזכו בתפקיד ומקבלים החלטות בפועל)." },
+                        { q: "מדוע אזרחים רבים נמנעים ממעורבות פוליטית פעילה (מדוע הם לא מצביעים)?", a: "דאל מציג מספר סיבות ('תפיסות'): תפיסת התגמול (אין בזה רווח אישי), תפיסת האלטרנטיבות (חוסר הבדל ממשי בין המפלגות), תפיסת חוסר יעילות ('הקול שלי ממילא לא משפיע'), חוסר ידע, או חסמים אובייקטיביים בקלפי." },
+                        { q: "מהם שני המניעים המרכזיים שדוחפים אנשים להיות 'מבקשי שררה' ולהיכנס לפוליטיקה?", a: "1. המניע האגואיסטי: חיפוש כוח, סטטוס, פרסום, כסף טובות הנאה לעצמם. 2. המניע האלטרואיסטי: רצון כן לתרום לחברה, לפתור בעיות ולהטיב עם הכלל. לרוב, פוליטיקאים מונעים משילוב של שני המניעים." },
+                        { q: "כיצד 'סוציאליזציה חברתית' משפיעה על מעורבותו של האדם בפוליטיקה?", a: "הסביבה שבה האדם גדל, התרבות שספג, החינוך בבית והאירועים ההיסטוריים שחווה, מעצבים את מבנה אישיותו ואת רצונותיו - ולכן משפיעים באופן דרמטי על הפיכתו לאדם אדיש או לאדם פוליטי פעיל." }
+                    ],
+                    fullSummary: `<p>המאמר יורד לרמת המיקרו - אל הפרט הבודד בחברה הדמוקרטית, ושואל: מדוע רוב האנשים אדישים לפוליטיקה, ומדוע מיעוט קטן בוחר להקדיש לה את חייו?</p>
+                                  <p>דאל מחלק את החברה ל-4 שכבות של מעורבות פוליטית: הבלתי מעורבים (האדישים), המעורבים חלקית (בוחרים ומפגינים לעיתים), מבקשי השררה (המתמודדים), והשליטים (אלו שנבחרו).</p>
+                                  <p>הוא מסביר את חוסר המעורבות של הרוב באמצעות שיקולי עלות-תועלת (רציונליות): האדם ישקיע את זמנו בפוליטיקה רק אם הוא מאמין שהדבר ישתלם לו, שיש לו כוח השפעה (יעילות פוליטית), ושיש הבדל משמעותי בין המועמדים השונים. כשאדם מרגיש שהקול שלו "לא משנה", הוא יישאר בבית.</p>
+                                  <p>לעומתם, "מבקשי השררה" הם אלו שנכנסים לזירה. מניעיהם נעים על הסקאלה שבין אגואיזם טהור (רדיפת כבוד, שליטה ומשאבים כפי שתיארו פרויד ותרסימאכוס), לבין אלטרואיזם טהור (תחושת שליחות ונתינה לכלל כפי שתיאר אפלטון). ברוב המקרים מדובר בשילוב, המעוצב על ידי חינוכו וסביבתו של המועמד (סוציאליזציה).</p>`
+                }
+            ],
+
+            thinkers: [
+                { 
+                    id: "plato", name: "אפלטון", 
+                    attributes: [
+                        { k: "משטר רצוי", v: "שלטון פילוסופים (אריסטוקרטיה של החוכמה). גישה אידיאליסטית. אין צורך במערכת חוקים כי החכם ידון בכל מקרה לגופו ויכריע בתבונה." },
+                        { k: "קניין ומשפחה", v: "אוסר על קניין פרטי, רכוש או חיי משפחה רגילים למעמדות העליונים (פילוסופים ושומרים). המטרה: למנוע ניגוד עניינים ושחיתות אגואיסטית." },
+                        { k: "טבע האדם", v: "נפש האדם מחולקת לשלושה יסודות (תבונה, אומץ, תאווה) וכך גם מבנה המדינה (פילוסופים, שומרים, יצרנים)." },
+                        { k: "תהליך התהוות המדינה", v: "המדינה נוצרת מצורך כלכלי (חלוקת עבודה יעילה ומומחיות) ומצורך קיומי בביטחון." }
+                    ],
+                    fullSummary: `<p>אפלטון הוא פילוסוף יווני קלאסי, מגדולי הוגי הגישה האידיאליסטית. בספרו "פוליטיאה" (רפובליקה) הוא מתאר מודל למדינה אוטופית, אידיאלית ומושלמת, שנועדה לרפא את חוליי המשטרים המושחתים של תקופתו (שרצחו את מורהו סוקרטס).</p>
+                                  <p>אפלטון מבסס את תורתו על "משל האותיות" וחלוקת הנפש. כפי שבנפש יש תבונה, אומץ לב ותאווה - כך המדינה תחולק לשלושה מעמדות: 1. הפילוסופים החכמים - ינהיגו את המדינה. 2. השומרים/חיילים האמיצים - יגנו עליה. 3. היצרנים/סוחרים מונעי התאוות - ידאגו לכלכלה.</p>
+                                  <p>תפיסתו כוללת יסודות רדיקליים (טוטליטריים משהו): כדי להבטיח שהשליטים יקבלו הכרעות רציונליות נקיות מאינטרסים אישיים, אפלטון <strong>מבטל את מוסד הקניין והמשפחה הפרטית</strong> בשני המעמדות העליונים. הילדים יגודלו במשותף על ידי המדינה, ואיש לא יחזיק רכוש.</p>
+                                  <p>ב"משל המערה" מסביר אפלטון את תפקיד הפילוסוף: למרות שהוא הצליח להשתחרר מכבלי הבורות ולראות את אור השמש (האמת), חובתו האלטרואיסטית היא לשוב למערה החשוכה כדי להנהיג את החברה ולשפר אותה, גם אם העם ילעג לו.</p>`
+                },
+                { 
+                    id: "aristotle", name: "אריסטו", 
+                    attributes: [
+                        { k: "משטר רצוי", v: "משטר מעורב (פוליטיאה) המאזן בין יסוד דמוקרטי, אריסטוקרטי ומונרכי. גישה ריאליסטית. *חובה* שיתקיים שלטון חוק המגביל את השליט." },
+                        { k: "קניין ומשפחה", v: "תומך נלהב בקניין פרטי ומשפחה. קניין גורם לאדם להיות אחראי ולהזדהות עם רכושו, משפחה מעניקה שייכות מונעת הזנחה." },
+                        { k: "טבע האדם", v: "האדם הוא 'חיה פוליטית' (יצור חברתי) מטבעו. הוא אינו יכול לחיות מחוץ למסגרת של מדינה." },
+                        { k: "תכלית המדינה", v: "ההצדקה למדינה (הטלאולוגיה) היא לאפשר לאדם חיים של שגשוג - 'החיים הטובים', אושר, והגשמה עצמית." }
+                    ],
+                    fullSummary: `<p>אריסטו, תלמידו של אפלטון, היה אבי הגישה הריאליסטית (האמפירית) בפילוסופיה הפוליטית. הוא יצא לחקור את חוקותיהן של 158 ערי מדינה כדי להבין אילו משטרים עובדים בפועל ואילו קורסים.</p>
+                                  <p>בניגוד גמור למורהו, אריסטו ביקר את הרעיון של ביטול הקניין והמשפחה. הוא טען שמה ששייך לכולם - איש אינו דואג לו. קניין פרטי ומשפחה הם בסיס לאחריות, למוסר ולפיתוח אישי, ויש להשתמש בהם לטובת הכלל מתוך נדיבות.</p>
+                                  <p>אריסטו סבר שהאדם הוא "חיה פוליטית" - יצור שנועד לחיות בחברה. המשפחה מתרחבת לכפר, והכפרים מתאגדים למדינה (הפוליס). לכל תופעה יש תכלית (טלאולוגיה), ותכלית המדינה אינה רק סיפוק צרכים כלכליים, אלא יצירת מסגרת שתאפשר את <strong>"החיים הטובים"</strong> - חיי אושר, הגשמה ומימוש מוסרי לכל אזרח.</p>
+                                  <p>באשר למשטר, אריסטו חילק את המשטרים לטובים ולמושחתים בהתאם למספר השליטים (יחיד, מיעוט, רבים) ולהאם הם פועלים לטובת הכלל או לטובת עצמם. המודל העדיף בעיניו הוא "פוליטיאה" (משטר מעורב) המאזן בין הכוחות השונים בחברה ומכפיף את כולם - כולל השליטים - לשלטון החוק.</p>`
+                },
+                { 
+                    id: "machiavelli", name: "מקיאוולי", 
+                    attributes: [
+                        { k: "משטר רצוי", v: "בימים רגילים: רפובליקה (שלטון מעורב ומאוזן עם חוקים ברורים). בימי משבר ואנרכיה: נדרש 'נסיך' - שליט יחיד, חזק וכוחני שישליט סדר." },
+                        { k: "יחס לדת ולמוסר", v: "הדת והמוסר אינם ערכים עליונים, אלא מכשירים פוליטיים בידי השליט לאיחוד העם ויצירת ציות למדינה." },
+                        { k: "תכונות השליט", v: "על השליט להתאפיין ב'מידה טובה' (Virtu): עורמה (כשועל), כוחניות (כאריה), מיומנות ונכונות לעשות רע לשם שימור יציבות השלטון." },
+                        { k: "טבע האדם", v: "פסימי. האדם הוא אגואיסט ורע מנעוריו, מונע מאינטרסים פשוטים ולכן יש לשלוט בו תוך הפעלת יראה (כדאי לשליט שייראו מפניו משֶיֶאהבו אותו)." }
+                    ],
+                    fullSummary: `<p>ניקולו מקיאוולי, מאבות מדע המדינה המודרני (פירנצה, המאה ה-16), הפריד לראשונה בין מוסר לפוליטיקה. הגישה שלו היא אמפירית, אובייקטיבית וקרה, ונועדה לחפש חוקיות בהתנהגות מנהיגים לאורך ההיסטוריה.</p>
+                                  <p>בספרו המפורסם "הנסיך" (שנכתב בתקופה של אנרכיה), הוא מייעץ לשליט האבסולוטי כיצד לשמר את כוחו ושלטונו בכל מחיר. על הנסיך לאמץ את "המידה הטובה" (Virtu) - מונח שלא מתאר טוב-לב מוסרי, אלא גאווה, אומץ, ערמומיות, והנכונות לבצע מעשים אכזריים ורעים אם הדבר נדרש לשם הגנת המדינה והיציבות. הדת, לדידו של מקיאוולי, היא כלי ציני מעולה לגיוס תמיכת ההמונים, ועל המנהיג להיראות אדם דתי גם אם אינו כזה.</p>
+                                  <p>אולם, בספרו "העיונים" מתגלה מקיאוולי אחר: כשהמדינה נמצאת במצב יציב, המשטר המועדף עליו הוא ה<strong>רפובליקה</strong>. משטר המחלק את הכוח בין האצולה להמונים, מתבסס על מערכת חוקים, צבא אזרחים הפועל מתוך פטריוטיות, ומעודד סולידריות בין האזרחים.</p>`
+                },
+                { 
+                    id: "hobbes", name: "תומאס הובס", 
+                    attributes: [
+                        { k: "מצב הטבע", v: "מצב איום ונורא. מלחמת 'כל בכל'. בני האדם אגואיסטים השואפים לכוח. ללא חוק, חיי אדם הם דלים, מאוימים וקצרים." },
+                        { k: "האמנה החברתית", v: "מתוך פחד ותבונה, האזרחים חותמים על חוזה שבו הם מוותרים ויתור מוחלט על *כל* הזכויות והחירויות לטובת הריבון, בתמורה לביטחון והגנה. הריבון אינו צד לחוזה." },
+                        { k: "משטר רצוי", v: "מלוכה אבסולוטית (שלטון יחיד ומוחלט). כל פיצול כוח יחזיר את האנרכיה." },
+                        { k: "טבע האדם", v: "בני האדם שווים ביכולתם הבסיסית להרוג זה את זה. האדם הוא יצור פחדן, אגואיסט אך תבוני, המחשב שכר והפסד." }
+                    ],
+                    fullSummary: `<p>תומאס הובס האנגלי הוא הראשון מהוגי האמנה החברתית. בספרו "לוויתן" הוא מתאר מסע מחשבתי שמתחיל ב"מצב הטבע" - עולם דמיוני בו טרם קמו מדינות וחוקים.</p>
+                                  <p>הובס פסימי ביותר. מכיוון שבני האדם שווים בכוחם ואגואיסטים בטבעם, מצב הטבע הוא תמיד <strong>"מלחמת הכל בכל" (אדם לאדם זאב)</strong>. אין כלכלה, אין פיתוח, וכל אדם חושש לחייו בכל רגע. עם זאת, לאדם יש שכל (תבונה) והוא מבין שכדי לשרוד עליו לברוח מהמצב הזה.</p>
+                                  <p>כאן נכנסת ה"אמנה החברתית": האזרחים מחליטים לוותר על חירותם באופן מוחלט, ולהעביר את כל הכוח לאדם אחד (או גוף אחד) - הריבון השליט (המלך האבסולוטי). הריבון מקבל כוח עצום ובלתי מוגבל כדי לכפות חוק וסדר. כל עוד הריבון מספק ביטחון בסיסי, לאזרחים אסור למרוד בו בשום אופן. זכות המרד היחידה עומדת לאזרח רק כאשר הריבון מאיים במישרין על חייו שלו (הוצאה להורג).</p>`
+                },
+                { 
+                    id: "locke", name: "ג'ון לוק", 
+                    attributes: [
+                        { k: "מצב הטבע", v: "מצב של חירות ושוויון, יחסית שליו ומוסרי. הבעיה: חסר שופט מכריע אובייקטיבי, ולכן זכויות האדם נמצאות בסכנה מתמדת בשל קומץ פושעים." },
+                        { k: "האמנה החברתית", v: "ויתור מוגבל בלבד. האזרחים מוותרים רק על הזכות לשפוט ולהעניש בעצמם. המטרה הבלעדית של האמנה היא הגנה על הזכויות הטבעיות." },
+                        { k: "משטר רצוי", v: "שלטון נציגים פרלמנטרי. תומך עז בהפרדת רשויות. המדינה כ'שומר הלילה' - שלטון מוגבל מאד." },
+                        { k: "זכויות טבעיות", v: "האדם נולד עם 3 זכויות בלתי ניתנות לערעור: זכות לחיים, זכות לחירות, וזכות לקניין (הנובע מעמלו של האדם)." }
+                    ],
+                    fullSummary: `<p>ג'ון לוק, אבי הליברליזם, מצייר תמונה אופטימית יותר משל הובס. במצב הטבע בני האדם הם יצורים תבוניים, החיים לרוב בשלום, בשוויון, ותוך כיבוד הדדי של <strong>הזכויות הטבעיות</strong> שלהם: חיים, חירות, והזכות החשובה מכל - <strong>קניין</strong>.</p>
+                                  <p>אז למה צריך מדינה? משום שתמיד יהיו כמה יחידים חסרי תבונה שיפגעו באחרים. במצב הטבע, כל אדם הוא "השופט של עצמו", מה שמוביל לנקמות דם ולהסלמה. המדינה מוקמת באמנה חברתית מתוך נוחות - כדי לייצר מערכת חוקים מסודרת ושופט אובייקטיבי.</p>
+                                  <p>האמנה של לוק מבוססת על שלטון הסכמי שמוגבל בכוחו (מדינה כ"שומר לילה"). האזרחים לא ויתרו על חירותם! לכן, אם השלטון חורג מסמכותו, פוגע בקניין (למשל גובה מיסים ללא רשות) או מדכא את החירות, לאזרחים יש <strong>זכות מלאה למרוד</strong> ולהפיל את השלטון. בנוסף, לוק דוגל בהפרדת רשויות כערובה נגד עריצות, ומטיף לסובלנות דתית נרחבת.</p>`
+                },
+                { 
+                    id: "rousseau", name: "ז'אן ז'אק רוסו", 
+                    attributes: [
+                        { k: "מצב הטבע", v: "אידיאלי וטהור. בני האדם נולדים טובים, חופשיים, מוסריים ושווים ('הפרא האציל'). החברה האנושית, ובמיוחד מוסד הקניין, היא שהשחיתה אותם ויצרה אי-שוויון." },
+                        { k: "האמנה החברתית", v: "האמנה מחייבת כל אדם למסור את עצמו בשלמותו לכלל. כך נוצר גוף ציבורי מאוחד שהוא הריבון האמיתי, המודרך על ידי 'הרצון הכללי'." },
+                        { k: "משטר רצוי", v: "דמוקרטיה ישירה ורדיקלית. העם כולו מתכנס ומחוקק את החוקים. אינו מאמין בדמוקרטיה נציגותית (נציג לא יכול לייצג רצון של אחר)." },
+                        { k: "הרצון הכללי", v: "האינטרס האובייקטיבי המשותף המכוון לטובת הכלל. שונה מ'רצון הכלל' (שהוא רק חיבור סך האינטרסים האגואיסטיים של הפרטים)." }
+                    ],
+                    fullSummary: `<p>רוסו הצרפתי מציג בספרו "האמנה החברתית" ביקורת חריפה על החברה המודרנית. לטענתו, "האדם נולד חופשי, אך בכל מקום הוא כבול באזיקים". מצב הטבע המקורי היה מצב טהור של שוויון וחירות ("הפרא האציל"), עד שהגיע האדם הראשון שגידר קרקע ואמר "זה שלי" (המצאת הקניין) – ובכך המיט על האנושות סכסוכים, מעמדות ורוע.</p>
+                                  <p>כדי לרפא את החברה, רוסו מציע אמנה חברתית שבה האדם לא מוותר על חירותו לטובת מלך (כמו בהובס), אלא מוסר את עצמו לכלל האזרחים. כך נוצר "גוף ריבוני" שמונחה על ידי <strong>"הרצון הכללי"</strong>. הרצון הכללי הוא מונח מופשט המתאר את טובת המדינה כולה (ערך אלטרואיסטי), להבדיל מ"רצון הכלל" (שהוא סתם אוסף צרכים אגואיסטיים של הבוחרים).</p>
+                                  <p>המשטר שרוסו תומך בו הוא <strong>דמוקרטיה ישירה</strong> ללא נציגים. האזרח החופשי באמת הוא זה המפעיל "חירות רציונלית" ומציית לחוקים שהוא עצמו לקח חלק בחקיקתם לטובת הכלל. מי שיסרב לציית לרצון הכללי – "יכריחו אותו להיות חופשי".</p>`
+                },
+                { 
+                    id: "hegel", name: "גיאורג הגל", 
+                    attributes: [
+                        { k: "תהליך התהוות המדינה", v: "ההיסטוריה האנושית מתפתחת בתהליך 'דיאלקטי' מתמיד (תזה -> אנטי-תזה -> סינתזה) המונע על ידי 'רוח הזמן' (Zeitgeist) לקראת מציאות מושלמת של חירות." },
+                        { k: "מעגלי התייחסות", v: "האדם פועל ב-3 מעגלים: 1. משפחה (יחס אלטרואיסטי, אך מוגבל למיעוט). 2. חברה אזרחית/שוק מסחרי (יחס אגואיסטי ואוניברסלי). 3. מדינה (אלטרואיזם אוניברסלי)." },
+                        { k: "תכלית המדינה", v: "המדינה אינה אמצעי טכני! היא המוסד העליון, השילוב (הסינתזה) המושלם. רק במסגרת המדינה הלאומית האדם מממש את חירותו האמיתית מתוך אחדות גורל, תודעה והזדהות." }
+                    ],
+                    fullSummary: `<p>הגל תופס את הפילוסופיה הפוליטית דרך עדשת ההיסטוריה. לדבריו, העולם מתפתח ב<strong>שיטה הדיאלקטית</strong> (התפתחות מתוך ניגודים: תזה מתנגשת עם אנטי-תזה, והתוצאה היא סינתזה עליונה יותר). מה שמניע את ההיסטוריה היא "רוח הזמן" (הצייטגייסט), שמתפתחת לאורך התקופות עד להשגת המדינה הגרמנית המודרנית בה כולם זכאים לזכויות.</p>
+                                  <p>ההבדל הגדול ביותר של הגל מהוגים קודמים הוא ביחסו למדינה: הוא דוחה את הרעיון שהמדינה הוקמה מאילוץ תועלתני כדי לספק ביטחון וקניין (כהובס ולוק). להגל, <strong>המדינה היא ערך עליון ותכלית בפני עצמה</strong>.</p>
+                                  <p>האדם פועל בשלושה מישורים: במשפחה הוא דואג באהבה לקרוביו הקרובים (אלטרואיזם צר). ב"חברה האזרחית" (עולם העבודה והעסקים) הוא מתחרה בזרים מתוך אינטרס אישי (אגואיזם אוניברסלי). <strong>המדינה</strong> היא הסינתזה המושלמת המשלבת את שניהם: היא יוצרת מצב שבו האדם חש אהבה, שותפות גורל ואחריות כלפי מיליוני אזרחים זרים (אלטרואיזם אוניברסלי). רק במדינה כזו האדם חופשי וממומש באמת.</p>`
+                }
+            ],
+
+            flashcards: [
+                /* PERI */
+                { term: "הגדרת לינקולן לדמוקרטיה", definition: "הגדרה פורמלית שקבעה: 'שלטון העם, על ידי העם, למען העם'. פרי מבקר אותה כבלתי מציאותית בימינו.", topics: ["peri", "all", "all_articles"] },
+                { term: "דמוקרטיה עקיפה (נציגותית)", definition: "המשטר במציאות, שבו העם אינו שולט ישירות אלא נציגיו (מיעוט) שולטים, מה שמבטל את הרעיון של שלטון 'על ידי העם'.", topics: ["peri", "all", "all_articles"] },
+                { term: "רצונות חלקיים", definition: "הטענה של פרי שלעם אין אינטרס אחד משותף. החברה מורכבת מאינטרסים מנוגדים שמתקזזים זה בזה.", topics: ["peri", "all", "all_articles"] },
+                { term: "הרצון הכללי (סכנה בשימוש)", definition: "השימוש המסוכן במושג של רוסו. רודנים משתמשים בו כדי לטעון שהם יודעים מה טוב לעם ולדכא חירויות.", topics: ["peri", "all", "all_articles"] },
+                { term: "העם כמקור הסמכות", definition: "הבסיס לגישה הליברלית לדמוקרטיה. השלטון אינו שואב סמכות מהאל או ממסורת, אלא מהסכמת האזרחים.", topics: ["peri", "all", "all_articles"] },
+                { term: "עקרון הביקורת (פרי)", definition: "זכות וחובת העם לבקר את השלטון. מתבטא בביקורת תקופתית (בחירות) וביקורת שוטפת (תקשורת, בג\"ץ).", topics: ["peri", "all", "all_articles"] },
+                { term: "היחיד במרכז", definition: "ההנחה הדמוקרטית שהאדם הוא יצור תבוני ועצמאי שזכאי לנהל את חייו על פי בחירתו ורצונו.", topics: ["peri", "all", "all_articles"] },
+                { term: "זכויות אדם טבעיות", definition: "זכויות (חיים, חירות, קניין, כבוד) שהמדינה חייבת להגן עליהן כחלק מדמוקרטיה מהותית.", topics: ["peri", "all", "all_articles"] },
+                { term: "זכויות מיעוטים (עריצות הרוב)", definition: "החובה בדמוקרטיה מהותית להגן על מיעוטים מפני עריצות הרוב כדי למנוע שלטון דורסני.", topics: ["peri", "all", "all_articles"] },
+                { term: "הגדרת הדמוקרטיה של פרי", definition: "צורת ממשל שבה רוב בני האדם משפיעים ברוב התחומים על גורלם.", topics: ["peri", "all", "all_articles"] },
+                
+                /* MACIVER */
+                { term: "לגיטימיות המחוקק", definition: "סיבה מוסרית לציות לחוק: המחוקק נבחר בהליכים מסודרים ולכן יש לו סמכות לאשר חוקים.", topics: ["maciver", "all", "all_articles"] },
+                { term: "תוכן החוק", definition: "סיבה מוסרית לציות לחוק: החוק נתפס כמייצג ערכים הגיוניים, צודקים ומוסכמים על החברה.", topics: ["maciver", "all", "all_articles"] },
+                { term: "סולידריות חברתית (ציות)", definition: "מניע לציות בפועל - אדם מציית מתוך כבוד לשאר האזרחים וכדי לא להיות החריג שפוגע בכלל.", topics: ["maciver", "all", "all_articles"] },
+                { term: "ציות מתוך כפייה", definition: "מניע לציות שבו האדם מפחד מסנקציות ומעונש מצד מנגנוני האכיפה של המדינה.", topics: ["maciver", "all", "all_articles"] },
+                { term: "מיתוס הסמכות", definition: "האשליה או הנרטיב שהחברה יוצרת המאפשר למדינה לתבוע ציות, בדומה לסמכות ראש המשפחה.", topics: ["maciver", "all", "all_articles"] },
+                { term: "גבולות הציות", definition: "הנקודה שבה האזרח יסרב לציית לחוק, מפני שהוא סותר באופן בוטה את מצפונו או דתו.", topics: ["maciver", "all", "all_articles"] },
+                { term: "תחושת קיפוח וניכור", definition: "מצב הגורם לחוסר ציות. כשהאזרח (למשל עני או מיעוט) מרגיש שהמדינה לא דואגת לו, הוא יפר חוק.", topics: ["maciver", "all", "all_articles"] },
+                { term: "התפתחות המדינה מהמשפחה", definition: "התהליך ההיסטורי שמתאר מקאיבר שבו מסגרת הסמכות התרחבה ממשפחה, לשבט, ולבסוף למדינה.", topics: ["maciver", "all", "all_articles"] },
+                { term: "התנגשות בין חוק למוסר", definition: "דילמה שבה חוק המדינה דורש מהאזרח לעשות פעולה הסותרת ערך אנושי עליון לדעתו (כמו שירות צבאי לפציפיסט).", topics: ["maciver", "all", "all_articles"] },
+                { term: "ציות מתוך שגרה", definition: "מניע מרכזי לציות בחיי היום-יום. אנו פשוט רגילים להתנהג לפי החוקים (כמו לעצור באדום).", topics: ["maciver", "all", "all_articles"] },
+
+                /* YISHAI */
+                { term: "קבוצת אינטרס", definition: "התארגנות אזרחים שמטרתה להשפיע על החלטות השלטון והמדיניות הציבורית למען רעיון או אינטרס משותף.", topics: ["yishai", "all", "all_articles"] },
+                { term: "קבוצה אנומית", definition: "קבוצת אינטרס ספונטנית, זמנית, נטולת מוסדות ותקציב (כמו שכנים המפגינים בצומת).", topics: ["yishai", "all", "all_articles"] },
+                { term: "קבוצה לא מאוגדת", definition: "התארגנות של קבוצות פשוטות הקיימת לאורך זמן, ללא מוסד ותקציב (למשל הפגנות ארוכות טווח נגד כביש בשבת).", topics: ["yishai", "all", "all_articles"] },
+                { term: "קבוצת אינטרס מוסדית", definition: "ארגון הפועל בתוך מוסדות המדינה עצמם (כגון חברי כנסת המאוגדים כשדולת החקלאים או טייסי חיל האוויר).", topics: ["yishai", "all", "all_articles"] },
+                { term: "קבוצה מאוגדת", definition: "קבוצת אינטרס עצמאית ורשמית בעלת היררכיה, תקציב, ומשרדים (למשל, הסתדרות העובדים או האגודה למלחמה בסרטן).", topics: ["yishai", "all", "all_articles"] },
+                { term: "אינטרס פרטי", definition: "פעולה של קבוצה שמטרתה לקדם הטבות רק עבור החברים הרשומים בה (למשל ארגון נהגי מוניות).", topics: ["yishai", "all", "all_articles"] },
+                { term: "אינטרס ציבורי", definition: "פעולה של קבוצה שמטרתה לקדם רעיון כללי לטובת כלל החברה (כגון איכות הסביבה או זכויות אדם). קשה לה לגייס תקציב.", topics: ["yishai", "all", "all_articles"] },
+                { term: "קורפורטיזם", definition: "הסדר של שיתוף פעולה ממוסד בין הממשלה, קבוצות המעסיקים וארגוני העובדים במטרה להסכים על מדיניות כלכלית הרמונית.", topics: ["yishai", "all", "all_articles"] },
+                { term: "תמיכה בצמרת (כגורם הצלחה)", definition: "אחד המנבאים להצלחת קבוצת אינטרס - כאשר היא נהנית מגיבוי של פוליטיקאים, שרים ומוקדי כוח.", topics: ["yishai", "all", "all_articles"] },
+                { term: "אלימות כשיטת לחץ", definition: "מגמה המתגברת בישראל שבה קבוצות משתמשות בהפרת סדר וחסימת כבישים כדי לזכות בתשומת לב תקשורתית ובכניעה של השלטון.", topics: ["yishai", "all", "all_articles"] },
+
+                /* NEUBERGER */
+                { term: "דמוקרטיה יציבה", definition: "דמוקרטיה השורדת שנים ארוכות ברציפות, והוכיחה את חוסנה ביכולתה לצלוח משברים חריפים ללא קריסה.", topics: ["neuberger", "all", "all_articles"] },
+                { term: "מבחן האפקטיביות", definition: "תנאי ליציבות: על השלטון להוכיח יכולת יעילה בפתרון בעיות מעשיות ולנהל משברים, אחרת העם יפנה לרודן.", topics: ["neuberger", "all", "all_articles"] },
+                { term: "משטר לגיטימי", definition: "תנאי ליציבות: רוב גדול של האוכלוסייה רואה בשיטה הדמוקרטית את המסגרת הנכונה וההולמת לניהול המדינה.", topics: ["neuberger", "all", "all_articles"] },
+                { term: "פיתוח כלכלי וחברתי", definition: "גורם ליציבות: משטר שיודע להבטיח רמת חיים בסיסית, חינוך ורווחה, מה שמונע תסיסה וייאוש של האזרחים.", topics: ["neuberger", "all", "all_articles"] },
+                { term: "קיטוב פוליטי-אידיאולוגי", definition: "גורם שמסכן את היציבות. כאשר הפערים והשנאה בין הקצוות הפוליטיים עמוקים, גובר החשש לאלימות פוליטית.", topics: ["neuberger", "all", "all_articles"] },
+                { term: "הסכמה לאומית (קונצנזוס)", definition: "הצורך שיהיו הסכמות בסיסיות בין כל הפלגים על 'כללי המשחק' של הדמוקרטיה כדי למנוע שבירת כלים.", topics: ["neuberger", "all", "all_articles"] },
+                { term: "שיתוף פעולה בין אליטות", definition: "היכולת של מנהיגים מקבוצות יריבות להגיע לפשרות ולהקים לעיתים ממשלות אחדות בזמן משברים לאומיים.", topics: ["neuberger", "all", "all_articles"] },
+                { term: "עומס משימות ומשברים", definition: "גורם מסכן: ככל שכמות וחומרת המשברים הפוקדים את המדינה בו-זמנית גדלה, כך קשה יותר לדמוקרטיה לשרוד.", topics: ["neuberger", "all", "all_articles"] },
+                { term: "ארגונים וולונטריים", definition: "גופי חברה אזרחית התנדבותיים שמחזקים את יציבות הדמוקרטיה על ידי פיזור הכוח ועידוד מעורבות אזרחית חיובית.", topics: ["neuberger", "all", "all_articles"] },
+                { term: "קריסת רפובליקת ויימאר", definition: "הדוגמה ההיסטורית הבולטת במאמר לדמוקרטיה שלא עמדה ב'מבחן האפקטיביות' וקרסה לטובת משטר טוטליטרי.", topics: ["neuberger", "all", "all_articles"] },
+
+                /* EISENSTADT */
+                { term: "ריכוזיות שלטונית", definition: "מאפיין במדינה המודרנית - השלטון חולש על טריטוריה אחידה וקובע את החוק באופן שווה לכל (לעומת הפיאודליזם המפוצל).", topics: ["eisenstadt", "all", "all_articles"] },
+                { term: "פיזור הכוח הפוליטי", definition: "מאפיין במדינה המודרנית - הכוח כבר אינו בידי האצולה בלבד, אלא מבוזר לשכבות אוכלוסייה רחבות (בחירות, שוויון).", topics: ["eisenstadt", "all", "all_articles"] },
+                { term: "הפרדה בין פוליטיקה למינהל", definition: "הקמת מנגנון בירוקרטי מקצועי שמבצע את המדיניות באופן ניטרלי, בנפרד מנבחרי הציבור (הפוליטיקאים).", topics: ["eisenstadt", "all", "all_articles"] },
+                { term: "התערבות מקיפה בחיי האזרח", definition: "המדינה המודרנית נוגעת בחינוך, בכלכלה, בתקשורת ובמסחר, בניגוד לעבר שהמלך עסק רק בצבא ובגביית מס.", topics: ["eisenstadt", "all", "all_articles"] },
+                { term: "בעיית שיתוף הפעולה", definition: "הניכור והמרחק הפיזי והפסיכולוגי שנוצר בין האזרח הקטן לבין מנגנוני המדינה הענקיים, מה שמוריד את הזדהותו איתה.", topics: ["eisenstadt", "all", "all_articles"] },
+                { term: "בעיית 'שביל הזהב'", definition: "המתח במדינה הדמוקרטית בין הצורך ביציבות ותכנון לטווח ארוך, לבין רצון השלטון להתחנף לבוחר בטווח הקצר לקראת בחירות.", topics: ["eisenstadt", "all", "all_articles"] },
+                { term: "הזיקה בין חברה למדינה", definition: "הצורך למצוא איזון כדי למנוע מצב שבו המדינה משתלטת (פוליטיזציה) לחלוטין על החברה האזרחית העצמאית.", topics: ["eisenstadt", "all", "all_articles"] },
+                { term: "חוקה (כפתרון)", definition: "מסמך הקובע את כללי המשחק, זכויות האזרח והגבלת השלטון, ובכך מסייע לאזן את כוחה של המדינה המודרנית.", topics: ["eisenstadt", "all", "all_articles"] },
+                { term: "מפלגות פוליטיות (כפתרון)", definition: "מוסדות שמתווכים בין האזרח לבין השלטון. הם מעניקים ייצוג לציבור ולפיכך פותרים את תחושת הניכור והמרחק.", topics: ["eisenstadt", "all", "all_articles"] },
+                { term: "הסבר מטריאליסטי מול רעיוני", definition: "שתי הגישות להופעת המדינה: המטריאליסטית (שינויים בכלכלה ובתעשייה) והאידיאליסטית (הופעת הרציונליות ורעיונות חילוניים).", topics: ["eisenstadt", "all", "all_articles"] },
+
+                /* FRIEDRICH & BRZEZINSKI */
+                { term: "תסמונת 6 המאפיינים", definition: "הטענה של פרידריך ובז'ז'ינסקי שכדי שמשטר יוגדר טוטליטרי הוא חייב לכלול את כל 6 המאפיינים יחדיו ולא מספיק חלק מהם.", topics: ["friedrich", "all", "all_articles"] },
+                { term: "אידיאולוגיה חובקת-כל", definition: "מאפיין טוטליטרי: אמונה משיחית בהקמת עולם חדש, הדורשת נאמנות מוחלטת ושוללת את הסדר הקיים באופן גורף.", topics: ["friedrich", "all", "all_articles"] },
+                { term: "מפלגת המון יחידה", definition: "מאפיין טוטליטרי: מפלגה היררכית השולטת בבלעדיות, ולרוב מונהגת על ידי שליט עליון (דיקטטור) יחיד בראשה.", topics: ["friedrich", "all", "all_articles"] },
+                { term: "מערכת טרור (משטרה חשאית)", definition: "מאפיין טוטליטרי: הפעלת טרור פיזי ופסיכולוגי נגד כל התנגדות (כולל בתוך המפלגה) ונגד 'אויבי העם' תוך שימוש במשטרה ככלי לדיכוי מחשבתי.", topics: ["friedrich", "all", "all_articles"] },
+                { term: "מונופול על התקשורת", definition: "מאפיין טוטליטרי: שליטה ממשלתית מלאה בעיתונות וברדיו כדי לייצר שטיפת מוח מתמדת ולמנוע דעות חלופיות.", topics: ["friedrich", "all", "all_articles"] },
+                { term: "מונופול על נשק", definition: "מאפיין טוטליטרי: ריכוז מוחלט של כל הכוח הצבאי וכלי הנשק בידי המפלגה או המנהיג למניעת התקוממות.", topics: ["friedrich", "all", "all_articles"] },
+                { term: "כלכלה מנוהלת (ריכוזית)", definition: "מאפיין טוטליטרי: שליטת הממשל באמצעי הייצור וסנכרון בירוקרטי של הכלכלה לטובת מטרות האידיאולוגיה הלאומית.", topics: ["friedrich", "all", "all_articles"] },
+                { term: "הקשר בין טוטליטריות למודרניות", definition: "הטענה שרק התפתחות טכנולוגית (רדיו, מסילות רכבת, נשק מודרני, מאגרי מידע) מאפשרת שליטה כה הדוקה במיליוני בני אדם.", topics: ["friedrich", "all", "all_articles"] },
+                { term: "הריסת חברת ההמונים", definition: "יעדו הסמוי של הטוטליטריזם: פירוק כל המסגרות האזרחיות (משפחה/קהילה) כך שהאזרח יישאר מבודד ותלוי אך ורק במנהיג.", topics: ["friedrich", "all", "all_articles"] },
+                { term: "ההבדל בין אוטוקרטיה לטוטליטריות", definition: "אוטוקרטיה (מלוכה/עריצות רגילה) היא שלטון יחיד, אך אין בה את שאיפת השליטה המלאה בכל רבדי החיים והמחשבה שיש בטוטליטריות.", topics: ["friedrich", "all", "all_articles"] },
+
+                /* GOREN */
+                { term: "עיתונות חופשית", definition: "אבן יסוד בדמוקרטיה המאפשרת זרימת מידע וביקורת, בלעדיה האזרח אינו יכול לקבל החלטות מושכלות בבחירות.", topics: ["goren", "all", "all_articles"] },
+                { term: "דגם 'העיתונות מטעם' (התיאום)", definition: "הדגם ששלט בישראל בראשיתה. העיתונות שיתפה פעולה עם השלטון, צנזרה עצמה וראתה עצמה כמגויסת למען המפעל הציוני.", topics: ["goren", "all", "all_articles"] },
+                { term: "דגם 'העימות'", definition: "הדגם שהתפתח מאז מלחמת יום כיפור. התקשורת מתפקדת כ'כלב השמירה', עוקצת, חוקרת, מבקרת ונמצאת בקונפליקט טבעי מול השלטון.", topics: ["goren", "all", "all_articles"] },
+                { term: "פרות קדושות", definition: "נושאים הקשורים בביטחון, מדיניות חוץ וסודות המדינה שבעבר זכו לחסינות מוחלטת מביקורת תקשורתית בישראל.", topics: ["goren", "all", "all_articles"] },
+                { term: "ועדת העורכים", definition: "מוסד היסטורי של שיתוף פעולה בו השלטון חשף בפני העורכים מידע סודי בתמורה להבטחה שהם יצנזרו את פרסומו בציבור.", topics: ["goren", "all", "all_articles"] },
+                { term: "בג\"ץ קול העם (1953)", definition: "פסק הדין המכונן בו השופט אגרנט הגן על עיתון שביקר את הממשלה, וקבע שמותר להגביל ביטוי רק במבחן ה'ודאות הקרובה'.", topics: ["goren", "all", "all_articles"] },
+                { term: "מבחן הודאות הקרובה", definition: "המבחן המשפטי הקובע שאין לסגור עיתון או להגביל ביטוי, אלא אם יש ודאות קרובה מאד לכך שהוא יפגע קשות בשלום הציבור.", topics: ["goren", "all", "all_articles"] },
+                { term: "פקודת העיתונות (המנדטורית)", definition: "חוק נוקשה משנת 1933 שמחייב קבלת רישיון ממשרד הפנים להוצאת עיתון - סממן חוקי בעייתי לחופש העיתונות בישראל.", topics: ["goren", "all", "all_articles"] },
+                { term: "הצנזורה הצבאית", definition: "סמכות דרקונית המוענקת מתקנות לשעת חירום לפסול פרסומים ביטחוניים, שרוככה מעט במציאות בעזרת הסכמים עם העיתונות.", topics: ["goren", "all", "all_articles"] },
+                { term: "עוינות הציבור לתקשורת", definition: "התופעה שעליה מצביעה גורן, לפיה אזרחים רבים בישראל אינם מעריכים את חשיבות חופש העיתונות ותומכים בהגבלת הביקורת כדי לשמור על קונצנזוס ביטחוני.", topics: ["goren", "all", "all_articles"] },
+
+                /* SHAMIR */
+                { term: "סובלנות פוליטית", definition: "הנכונות להעניק את מלוא הזכויות הדמוקרטיות (ביטוי, התאגדות) לאחר, גם כאשר דעתו חריגה, מקוממת או מנוגדת לקונצנזוס.", topics: ["shamir", "all", "all_articles"] },
+                { term: "דוקטרינת הסכנה הברורה והמיידית", definition: "גישה לחופש ביטוי (בארה\"ב) הרואה בסובלנות ערך עליון. תגביל ביטוי רק כשיש ודאות מוחלטת לפגיעה מיידית בשלום הציבור.", topics: ["shamir", "all", "all_articles"] },
+                { term: "גישת האיזון", definition: "הגישה המקובלת בישראל/אירופה: סובלנות היא ערך חשוב, אך עליה להיות מאוזנת לפי 'השכל הישר' אל מול ביטחון המדינה והגנה על הדמוקרטיה עצמה.", topics: ["shamir", "all", "all_articles"] },
+                { term: "דמוקרטיה מתגוננת", definition: "הזכות והחובה של מדינה דמוקרטית לפסול מפלגות או ארגונים המשתמשים בכלים דמוקרטיים כדי לחסל את המשטר הדמוקרטי (כמו פסיקת בג\"ץ באל-ארד).", topics: ["shamir", "all", "all_articles"] },
+                { term: "חוסר סובלנות בחברה הישראלית", definition: "ממצאי המחקר של שמיר מראים שבישראל יש רמה גבוהה של אי-סובלנות הנובעת בעיקר מהסכסוך הישראלי-ערבי ומתחושת איום מתמדת.", topics: ["shamir", "all", "all_articles"] },
+                { term: "דה-לגיטימציה של יריבים", definition: "ביטוי של חוסר סובלנות בו מנסים להציג קבוצה או מפלגה (למשל באופוזיציה או במיעוט הערבי) כלא לגיטימית ולא ראויה לפעול פוליטית.", topics: ["shamir", "all", "all_articles"] },
+                { term: "תפקיד ההנהגה הפוליטית", definition: "ההשפעה הדרמטית שיש למנהיגים. הם יכולים להסית ולהעמיק חוסר סובלנות (כמו בבחירות 1981), או לחלופין לרסן ולחנך לסובלנות.", topics: ["shamir", "all", "all_articles"] },
+                { term: "תפקיד מערכת המשפט (בג\"ץ)", definition: "למשפטנים יש יכולת לקבוע תקדימים ולהגן על קבוצות מיעוט מפני עריצות הרוב גם כאשר הציבור הרחב נוטה לחוסר סובלנות עמוק.", topics: ["shamir", "all", "all_articles"] },
+                { term: "רצח פוליטי כתוצר אי-סובלנות", definition: "ההקצנה והקיטוב הובילו לאלימות כלפי מתנגדי שלטון כמו רצח אמיל גרינצוויג בעת מלחמת לבנון וההסתה החמורה סביב רצח יצחק רבין.", topics: ["shamir", "all", "all_articles"] },
+                { term: "פרדוקס הסובלנות", definition: "הדילמה הפילוסופית: האם משטר דמוקרטי סובלני מחויב להפגין סובלנות גם כלפי קבוצות חסרות סובלנות המאיימות להרוס אותו?", topics: ["shamir", "all", "all_articles"] },
+
+                /* DAHL */
+                { term: "הבלתי פוליטיים", definition: "השכבה הראשונה אצל דאל. אזרחים שלא מתעניינים כלל בפוליטיקה, אינם משתתפים ולא מצביעים.", topics: ["dahl", "all", "all_articles"] },
+                { term: "השכבה הפוליטית", definition: "אזרחים שמעורבים ברמה בסיסית: הולכים להצביע בקלפי, חותמים על עצומה או מפגינים מדי פעם, אך אינם שואפים לתפקיד רשמי.", topics: ["dahl", "all", "all_articles"] },
+                { term: "מבקשי השררה", definition: "אזרחים שמעורבותם אקטיבית והם מבקשים להחזיק בתפקיד פוליטי, להשפיע באופן עמוק ולהוביל את המדינה.", topics: ["dahl", "all", "all_articles"] },
+                { term: "השליטים", definition: "מבקשי השררה שהצליחו בפועל להיבחר ולתפוס את העמדות הקובעות בממשל.", topics: ["dahl", "all", "all_articles"] },
+                { term: "תפיסת התגמול (ההימנעות ממעורבות)", definition: "אנשים לא מעורבים כי הם חושבים שהרווח האישי שלהם מהפוליטיקה קטן יותר ממה שישיגו בעיסוק בעבודה אחרת.", topics: ["dahl", "all", "all_articles"] },
+                { term: "תפיסת האלטרנטיבות", definition: "הסיבה לאדישות שבה אזרח מאמין שאין הבדל מהותי בין המועמדים או המפלגות, ולכן 'לא משנה מי ייבחר'.", topics: ["dahl", "all", "all_articles"] },
+                { term: "תפיסת יעילות הפעולה", definition: "אדם לא יצביע אם הוא חש שהקול הבודד שלו ממילא חסר כוח ולא ישפיע על התוצאה הסופית של המערכת.", topics: ["dahl", "all", "all_articles"] },
+                { term: "המניע האלטרואיסטי", definition: "אחת משתי הסיבות של אדם לבקש שררה: הרצון האמיתי לדאוג לטובת הכלל, לשרת את המדינה ולהיות שליח ציבור כפי שדרש אפלטון.", topics: ["dahl", "all", "all_articles"] },
+                { term: "המניע האגואיסטי", definition: "אחת הסיבות של 'מבקש השררה' להיכנס לפוליטיקה: חיפוש אחר כבוד, עוצמה, פרנסה גבוהה וקידום אינטרסים של מקורביו.", topics: ["dahl", "all", "all_articles"] },
+                { term: "סוציאליזציה חברתית", definition: "תהליך החיברות שבו הסביבה, החינוך מהבית, והאירועים ההיסטוריים שהאדם חווה, מעצבים את נטייתו להפוך (או לא להפוך) לאדם פוליטי.", topics: ["dahl", "all", "all_articles"] },
+
+                /* THINKERS (30+ Flashcards) */
+                { term: "משל המערה (אפלטון)", definition: "מדגים את תפקיד הפילוסוף: לאחר שהשתחרר מבורות והכיר את האמת (האידיאות), מחובתו האלטרואיסטית לחזור להנהיג את החברה אף שיסבול לעג.", topics: ["plato", "all", "all_thinkers"] },
+                { term: "שלטון הפילוסופים (אפלטון)", definition: "המשטר האידיאלי. רק מי שהשכל והתבונה דומיננטיים בנפשו יכול וראוי לנהל את המדינה בהחלטות אובייקטיביות ונקיות מאגואיזם.", topics: ["plato", "all", "all_thinkers"] },
+                { term: "ביטול הקניין والמשפחה (אפלטון)", definition: "תנאי הכרחי שמוטל על השליטים והשומרים במדינתו של אפלטון, כדי שיהיו מרוכזים בטובת הכלל בלבד ולא ייכנעו לשחיתות ואהבת ממון.", topics: ["plato", "all", "all_thinkers"] },
+                { term: "משל האותיות (אפלטון)", definition: "האנלוגיה לפיה מבנה המדינה זהה למבנה נפש האדם. בשניהם קיימים שלושה יסודות: תבונה, אומץ לב ותאווה.", topics: ["plato", "all", "all_thinkers"] },
+                
+                { term: "פוליטיאה / משטר מעורב (אריסטו)", definition: "המשטר האידיאלי הריאליסטי שמאזן בין השפעת ההמון העני לבין מומחיות האליטה, ומבטיח כי כולם, כולל השליטים, כפופים לחוק הכתוב.", topics: ["aristotle", "all", "all_thinkers"] },
+                { term: "החיה הפוליטית (אריסטו)", definition: "תפיסת טבע האדם: האדם הוא יצור חברתי באופן מהותי, ורק בתוך מדינה הוא מסוגל לממש את הפוטנציאל השכלי והמוסרי שלו.", topics: ["aristotle", "all", "all_thinkers"] },
+                { term: "טלאולוגיה / תכלית המדינה (אריסטו)", definition: "תכלית קיומה של המדינה אינה הישרדות פיזית בלבד, אלא להעניק למסגרת האנושית את היכולת לחיות את 'החיים הטובים' ולהגיע לאושר ולהגשמה עצמית.", topics: ["aristotle", "all", "all_thinkers"] },
+                { term: "חשיבות הקניין והמשפחה (אריסטו)", definition: "ניגוד לאפלטון. אריסטו טוען שקניין גורם לאדם לקחת אחריות ולגלות נדיבות, ומשפחה מונעת הזנחה. מה שמשותף לכולם - סובל מהזנחה.", topics: ["aristotle", "all", "all_thinkers"] },
+                
+                { term: "הנסיך (מקיאוולי)", definition: "הספר בו פורש מקיאוולי את תורתו האמפירית. המדריך לשליט היחיד (בעתות משבר) כיצד לבסס עוצמה, להטיל יראה, ולשרוד בשלטון בכל מחיר.", topics: ["machiavelli", "all", "all_thinkers"] },
+                { term: "המידה הטובה / Virtu (מקיאוולי)", definition: "בשונה מהמוסר הקלאסי, תכונת השליט הטוב היא השילוב בין עורמה של שועל, כוחניות של אריה, מיומנות פוליטית, ונכונות להיות אכזר כשהדבר ישרת את יציבות המדינה.", topics: ["machiavelli", "all", "all_thinkers"] },
+                { term: "פורטונה / מזל (מקיאוולי)", definition: "כוחו של הגורל העיוור בפוליטיקה. אולם, שליט בעל Virtu יוכל להיערך מראש ולצמצם את נזקי הפורטונה באמצעות בניית מנגנונים חזקים.", topics: ["machiavelli", "all", "all_thinkers"] },
+                { term: "הדת כמכשיר פוליטי (מקיאוולי)", definition: "ההפרדה בין מוסר לפוליטיקה: הדת חשובה לא כאמת אלוהית, אלא ככלי מעולה ליצירת סולידריות בעם והבטחת ציות חברתי. לכן השליט חייב *להיראות* דתי.", topics: ["machiavelli", "all", "all_thinkers"] },
+                { term: "רפובליקה ב'עיונים' (מקיאוולי)", definition: "כשהמדינה יציבה, המשטר המועדף על מקיאוולי הוא הרפובליקה. משטר המחלק כוח בין המעמדות, מבוסס על חוק, ונעזר בצבא אזרחי פטריוטי.", topics: ["machiavelli", "all", "all_thinkers"] },
+                
+                { term: "מצב הטבע של הובס", definition: "מלחמת 'כל בכל'. אנרכיה מוחלטת בה כולם אגואיסטים השואפים לכוח. ללא שלטון, חיי האדם הם 'דלים, מאוימים, חיותיים וקצרים'.", topics: ["hobbes", "all", "all_thinkers"] },
+                { term: "לוויתן (הובס)", definition: "המטאפורה של הובס למדינה ולריבון האבסולוטי - גוף עצום וחזק שהאזרחים מסרו לו את כל כוחם בתמורה לכך שיכפה עליהם סדר וביטחון.", topics: ["hobbes", "all", "all_thinkers"] },
+                { term: "האמנה החברתית של הובס", definition: "חוזה הנובע מפחד תבוני, בו בני האדם מוותרים באופן מוחלט וסופי על כל זכויותיהם (החירות) לטובת הריבון, שאינו מחויב לחוזה.", topics: ["hobbes", "all", "all_thinkers"] },
+                { term: "זכות המרד אצל הובס", definition: "אינה קיימת כמעט כלל. המרד מצודק אך ורק בנקודת הקצה שבה הריבון מנסה להוציא את האזרח להורג, שכן האמנה נועדה מלכתחילה להגן על חייו.", topics: ["hobbes", "all", "all_thinkers"] },
+
+                { term: "מצב הטבע של לוק", definition: "מצב של שוויון וחירות שבו לרוב בני האדם מוסריים. החיסרון העיקרי הוא היעדר שופט אובייקטיבי ולכן זכויות טבעיות מופרות על ידי פושעים.", topics: ["locke", "all", "all_thinkers"] },
+                { term: "הזכויות הטבעיות (לוק)", definition: "חיים, חירות, קניין (רכוש כפועל יוצא של עבודה). זכויות שהאדם נולד איתן, והן הבסיס לליברליזם - המדינה קיימת אך ורק כדי להגן עליהן.", topics: ["locke", "all", "all_thinkers"] },
+                { term: "הפרדת רשויות (לוק)", definition: "ההצעה המכוננת (אשר פותחה מאוחר יותר) לפצל את כוח המדינה למחוקקת, מבצעת ופדרטיבית (חוץ), כדי למנוע עריצות ולהגן על חירות האזרחים.", topics: ["locke", "all", "all_thinkers"] },
+                { term: "האמנה החברתית של לוק", definition: "ויתור מוגבל. האזרחים מעבירים לשלטון רק את 'הזכות לשפוט ולהעניש'. השלטון מחויב באמנה, ואם הוא פוגע בזכויות - קמה לאזרחים 'זכות המרד'.", topics: ["locke", "all", "all_thinkers"] },
+
+                { term: "הפרא האציל (רוסו)", definition: "תפיסת מצב הטבע לפיה האדם נולד חופשי, טוב ומוסרי. החברה המודרנית והמצאת הקניין הם שקלקלו אותו ויצרו אי-שוויון.", topics: ["rousseau", "all", "all_thinkers"] },
+                { term: "האמנה החברתית של רוסו", definition: "חוזה שבו כל אדם מוסר את חירותו האגואיסטית לכלל הקהילה באופן שווה, וכך נוצר ריבון ציבורי השואף לטובת הכלל.", topics: ["rousseau", "all", "all_thinkers"] },
+                { term: "רצון הכלל מול הרצון הכללי (רוסו)", definition: "'רצון הכלל' הוא רק סכום האינטרסים האגואיסטיים של הפרטים בבחירות, בעוד 'הרצון הכללי' הוא הערך האובייקטיבי והמוסרי לטובת המדינה כולה.", topics: ["rousseau", "all", "all_thinkers"] },
+                { term: "דמוקרטיה ישירה (רוסו)", definition: "המשטר האידיאלי היחיד לדעתו. אינו מאמין בדמוקרטיה עקיפה, שכן אי אפשר 'לייצג' רצון של אדם אחר. העם כולו צריך להשתתף בחקיקה.", topics: ["rousseau", "all", "all_thinkers"] },
+                { term: "חירות רציונלית (רוסו)", definition: "האמונה שהחירות האמיתית מתקיימת רק כאשר אדם מציית לחוק שהוא השתתף בחקיקתו לטובת הכלל. לכן ניתן 'להכריח אותו להיות חופשי'.", topics: ["rousseau", "all", "all_thinkers"] },
+
+                { term: "רוח הזמן / Zeitgeist (הגל)", definition: "הכוח המטאפיזי המניע את ההיסטוריה האנושית להגשמה עצמית אל עבר החירות המוחלטת, אשר מתגלמת בסוף התהליך במדינה הגרמנית המודרנית.", topics: ["hegel", "all", "all_thinkers"] },
+                { term: "השיטה הדיאלקטית (הגל)", definition: "ההתפתחות ההיסטורית פועלת דרך ניגודים: מצב קיים (תזה) נתקל בניגוד (אנטי-תזה), והתנגשותם מולידה מצב עליון יותר (סינתזה).", topics: ["hegel", "all", "all_thinkers"] },
+                { term: "המשפחה (אצל הגל)", definition: "המעגל הראשון. מאופיין באלטרואיזם טבעי, אך יחס צר המופנה רק כלפי האנשים הקרובים לך מבחינה ביולוגית.", topics: ["hegel", "all", "all_thinkers"] },
+                { term: "החברה האזרחית (הגל)", definition: "המעגל השני. עולם הכלכלה והסחר בו פרטים מתחרים כאינדיבידואלים בעבור מיקסום תועלתם. זהו 'אגואיזם אוניברסלי' כלפי זרים.", topics: ["hegel", "all", "all_thinkers"] },
+                { term: "המדינה (אצל הגל)", definition: "מעגל השיא (הסינתזה). היא המוסד היחיד בו האדם מממש חירות אמיתית, משום שהיא משלבת אהבה וסולידריות (כמו במשפחה) המופנית כלפי מיליוני זרים באומה ('אלטרואיזם אוניברסלי').", topics: ["hegel", "all", "all_thinkers"] }
+            ],
+
+            questions: [
+                {
+                    topics: ["peri", "all", "all_articles"],
+                    meta: "קיץ תשפ\"ב - הדמוקרטיה / יורם פרי",
+                    text: "חוקרים רבים סבורים ששיתוף האזרחים בקבלת החלטות מדיניות מוביל לחיזוק הדמוקרטיה ולהגברת האפקטיביות של הממשל. בשל הירידה בשיעור האזרחים שהביעו אמון בממשל, גבר העיסוק בשאלת ההשתתפות. הציגו שני מאפיינים של הדמוקרטיה, והדגימו מאפיין אחד מן הפתיח.",
+                    rubric: [
+                        "הצגת מאפיין 1: העם כמקור הסמכות / היחיד במרכז / עיקרון הביקורת / זכויות אדם.",
+                        "הצגת מאפיין 2: כל מאפיין אחר מתוך המאמר המפורטים לעיל.",
+                        "הדגמה מהפתיח: 'שיתוף האזרחים בקבלת החלטות' מדגים את עקרון הביקורת / העם כמקור הסמכות - היכולת של האזרח כיצור תבוני להשפיע מהותית על השלטון."
+                    ]
+                },
+                {
+                    topics: ["maciver", "all", "all_articles"],
+                    meta: "קיץ תשפ\"ב - הציות לחוק / רוברט מקאיבר",
+                    text: "ממשלת צרפת חוקקה חוק שאוסר על האזרחים הלא מחוסנים להיכנס למקומות ציבוריים. בעקבות החוק הפגינו המונים והניפו שלטים: 'לא לדיקטטורה'. הציגו שני גורמים שיכולים להשפיע על החלטת האזרחים בצרפת לציית או לא לציית. הדגימו מן הפתיח.",
+                    rubric: [
+                        "הצגת גורם 1 לציות/אי-ציות: למשל, תוכן החוק - אם האזרח חושב שתוכן החוק פוגע בזכות יסוד או אינו מוסרי הוא לא יציית.",
+                        "הצגת גורם 2: כפייה (פחד מעונש/קנס אם יכנסו למקום ציבורי), או תחושת ניכור וקיפוח שהחוק מייצר.",
+                        "הדגמה: 'לא לדיקטטורה' מראה שהאזרחים מאמינים שהחוק לא ראוי ופוגע במצפונם או שהשלטון מתנהג בכוחנות, ולכן הגבול המוסרי לציות נחצה."
+                    ]
+                },
+                {
+                    topics: ["yishai", "all", "all_articles"],
+                    meta: "קיץ תשפ\"ד - קבוצות אינטרס / יעל ישי",
+                    text: "במחקר על דמוקרטיה נכתב: 'לאליטות הכלכליות המייצגות אינטרסים עסקיים יש השפעות משמעותיות על מדיניות, בעוד לקבוצות המתבססות על ההמונים יש השפעה מועטה'. הציגו שני סוגים של קבוצות אינטרס. הדגימו סוג אחד מן הפתיח.",
+                    rubric: [
+                        "הצגת סוג קבוצה 1 (מימד ארגוני): מאוגדת / מוסדית / לא-מאוגדת / אנומית. לחלופין: אינטרס פרטי.",
+                        "הצגת סוג קבוצה 2 (מימד מהותי): אינטרס ציבורי.",
+                        "הדגמה: 'אליטות המייצגות אינטרסים עסקיים' הן דוגמה לקבוצה מאוגדת בעלת משאבים, הפועלת לרוב למען אינטרס פרטי של חבריה ולכן משפיעה רבות."
+                    ]
+                },
+                {
+                    topics: ["neuberger", "all", "all_articles"],
+                    meta: "קיץ תשפ\"ד - דמוקרטיות יציבות / ב' נויברגר",
+                    text: "המחלקות הפוליטיות יוצרות שיח מתלהם ואלים בין קבוצות שונות בחברה. מבט לדרכי העבר יכול ללמד שיעור בקבלת האחר וכיצד להתחשב. הציגו שני תנאים ליציבות של דמוקרטיה והדגימו את אחד התנאים מן הפתיח.",
+                    rubric: [
+                        "הצגת תנאי 1: היעדר קיטוב אידיאולוגי (מניעת שיח פלגני אלים המערער יציבות).",
+                        "הצגת תנאי 2: הסכמה לאומית רחבה (קונצנזוס) / תרבות דמוקרטית ושיתוף פעולה.",
+                        "הדגמה: הפתיח המזהיר מפני 'שיח מתלהם ואלים' מדגים את הסכנה של קיטוב עמוק בחברה, וקורא ל'התחשבות באחר' המדגימה חתירה להסכמה ושיתוף פעולה למען יציבות."
+                    ]
+                },
+                {
+                    topics: ["eisenstadt", "all", "all_articles"],
+                    meta: "קיץ תשפ\"ד - המדינה המודרנית / אייזנשטדט",
+                    text: "על פי דוח העמותות, בישראל פעלו 21,100 עמותות בתחומי תרבות, חינוך, ורווחה - מתן שירותים והפעלת מתנדבים. כיצד קבוצות אלו מחזקות את הזיקה בין החברה למדינה לפי המאמר?",
+                    rubric: [
+                        "הסבר הבעיה: במדינה המודרנית יש סכנה לניכור וחולשה של האזרח (בעיית שיתוף הפעולה / הזיקה לחברה).",
+                        "הסבר הפתרון (מתן הדוגמה מתוך הפתיח): עמותות חברתיות הן 'התאגדויות חופשיות' או ארגוני חברה אזרחית.",
+                        "כיצד הן מחזקות: הן יוצרות תחושת שייכות, מפזרות את הכוח כך שלא רק הממשלה פועלת, ומספקות לאזרחים דרך מעשית וישירה להשתתף בניהול החברה."
+                    ]
+                },
+                {
+                    topics: ["friedrich", "all", "all_articles"],
+                    meta: "קיץ תשפ\"א - הדיקטטורה הטוטליטרית / פרידריך",
+                    text: "בעקבות ההפגנות על תוצאות הבחירות בבלרוס דווח על מעצר של אלפי מפגינים, ירי משטרה וחסימת אינטרנט. הציגו שני מאפיינים של דיקטטורה טוטליטרית והדגימו מהפתיח.",
+                    rubric: [
+                        "הצגת מאפיין 1: הפעלת מערכת טרור (משטרה חשאית/אלימות כלפי מתנגדים).",
+                        "הצגת מאפיין 2: מונופול על התקשורת / אמצעי מידע.",
+                        "הדגמה: 'מעצר וירי משטרה לעבר מפגינים' מדגים את הפעלת מערכת הטרור / 'חסימת אינטרנט' מדגימה את מונופול השלטון על זרימת המידע."
+                    ]
+                },
+                {
+                    topics: ["goren", "all", "all_articles"],
+                    meta: "נבצרים תשפ\"א - כלי תקשורת / דינה גורן",
+                    text: "'עיתונות מטעם השלטון' הוא הדגם המועדף על פוליטיקאים. הסבר טענה זו לפי המאמר.",
+                    rubric: [
+                        "הגדרת דגם עיתונות מטעם (המגויסת): העיתונות משתפת פעולה, מתאמת מסרים ונמנעת מביקורת נוקבת בנושאים רגישים (פרות קדושות).",
+                        "הסבר ההעדפה: פוליטיקאים מעדיפים זאת משום שבדגם זה הם שולטים בנרטיב, מונעים חשיפת מחדלים, נהנים מיציבות תקשורתית, ולא עומדים למשפט ציבורי יומיומי חריף כפי שקורה בדגם ה'עימות'."
+                    ]
+                },
+                {
+                    topics: ["shamir", "all", "all_articles"],
+                    meta: "קיץ תשפ\"ה - סובלנות פוליטית / מ' שמיר",
+                    text: "בעימות בחירות בארה\"ב, בניגוד לעבר, לחצו המועמדים את ידם. הסבירו את הערך סובלנות פוליטית. מהו תפקידה של ההנהגה בעיצוב גבולות הסובלנות והדגימו מן הפתיח.",
+                    rubric: [
+                        "הסבר סובלנות פוליטית: מתן אפשרות ליריב להביע דעתו ולהתמודד במערכת הדמוקרטית למרות מחלוקת עמוקה.",
+                        "תפקיד ההנהגה: מנהיגים קובעים את הטון. פוליטיקאים יכולים להסית וליצור חוסר סובלנות ואלימות, או מנגד - לשמש מודל לחיקוי ולרסן את החברה.",
+                        "הדגמה: 'לחיצת הידיים' למרות הדיון הסוער מדגימה כיצד ההנהגה נותנת דוגמה אישית לשיח מכבד, ובכך תורמת לעיצוב נורמה חברתית של סובלנות."
+                    ]
+                },
+                {
+                    topics: ["dahl", "all", "all_articles"],
+                    meta: "קיץ תשפ\"ה - האדם הפוליטי / רוברט דאל",
+                    text: "בעימות טלוויזיוני הבטיח מועמד הימין כי אם ייבחר יצמצם את ההגירה כדי להחזיר למדינה את אופיה, בעוד הנשיא המכהן הזהיר מניצחון הימין. הסבירו שני מניעים שדוחפים אנשים להגיע לשלטון והדגימו מניע אחד.",
+                    rubric: [
+                        "הצגת מניע 1: המניע האגואיסטי (רדיפת כוח, מעמד אישי, משאבים כלכליים וכבוד).",
+                        "הצגת מניע 2: המניע האלטרואיסטי (רצון אמיתי לקדם אידיאולוגיה, לתקן עוולות ולפעול לטובת המדינה על פי חזונו).",
+                        "הדגמה: מועמד המבטיח לשמור על אופי המדינה (לטעמו) מתאר את השקפת עולמו לטובת הכלל - מניע אלטרואיסטי, גם אם מתלווה אליו אגואיזם."
+                    ]
+                },
+                {
+                    topics: ["hobbes", "plato", "all", "all_thinkers"],
+                    meta: "קיץ תשפ\"ה - משטרים רצויים / אפלטון מול הובס",
+                    text: "בבוליביה פרץ הצבא לארמון הנשיאות בנסיון הפיכה. הנשיא ובית המשפט גינו את הפעולה, ולבסוף הרמטכ\"ל המורד נעצר. מהו המשטר המועדף לפי אפלטון ומהו לפי הובס? אילו עמדות היו נוקטים לגבי אירוע זה?",
+                    rubric: [
+                        "משטר מועדף אפלטון: שלטון הפילוסופים. אפלטון היה מתנגד לניסיון הפיכה צבאית (שלטון אנשי 'אומץ/כוח' - הטימוקרטיה) כי רק הפילוסופים התבוניים זכאים לשלוט.",
+                        "משטר מועדף הובס: מלוכה אבסולוטית (ריבון כול-יכול המבטיח ביטחון).",
+                        "עמדת הובס: הובס שולל כל מרידה. מרד מחזיר את המדינה ל'מלחמת כל בכל' (אנרכיה). הפיכה צבאית היא פגיעה אנושה בביטחון האזרחים שמפרה את האמנה, ולכן היה מגנה את זוניגה המורד ותומך במעצרו על ידי השלטון החוקי."
+                    ]
+                },
+                {
+                    topics: ["rousseau", "all", "all_thinkers"],
+                    meta: "קיץ תשפ\"ד - רצון הכללי / ז'אן ז'אק רוסו",
+                    text: "בתקופת מלחמה, משווקי מזון נוטים להעלות מחירים, אך המדינה מפעילה קנסות נגד מי שעושה זאת שלא לצורך. הסבירו את ההבדל בין רצון הרוב (רצון הכלל) לרצון הכללי לפי רוסו והדגימו מן הפתיח.",
+                    rubric: [
+                        "הסבר ההבדל: רצון הכלל הוא חיבור הרצונות האגואיסטיים (כל אחד דואג לעצמו). הרצון הכללי הוא הערך העליון והטוב המשותף האובייקטיבי של הקהילה כולה.",
+                        "הדגמת רצון הכלל (האגואיסטי): משווקי המזון שמעלים מחירים כדי לגזור קופון בזמן מלחמה מייצגים דאגה לאינטרס צר אגואיסטי.",
+                        "הדגמת הרצון הכללי: המדינה המטילה קנסות ומפקחת על המחירים מייצגת את הרצון הכללי – דאגה לטובת האזרחים והסולידריות החברתית בשעת משבר."
+                    ]
+                },
+                {
+                    topics: ["locke", "all", "all_thinkers"],
+                    meta: "קיץ תשפ\"ה - אמנה חברתית / ג'ון לוק",
+                    text: "פסיקת בג\"ץ מ-2009 מנעה הקמת בתי סוהר פרטיים. הפסיקה טענה כי העברת סמכות כליאה לתאגיד פרטי הפועל לרווח פוגעת בכבוד האדם. מהי אמנה חברתית לפי לוק וכיצד הוא היה מסביר פסיקה זו?",
+                    rubric: [
+                        "אמנה חברתית לוק: האזרחים מוותרים על הזכות העצמאית לשפוט ולהעניש (שרווחה במצב הטבע) ומפקידים אותה *בידי המדינה בלבד* כדי שתגן על הזכויות הטבעיות באובייקטיביות.",
+                        "הסבר לפסיקה: לפי לוק, המדינה לא יכולה להפריט ולהעביר בחזרה לגוף פרטי (תאגיד כלכלי) את הסמכות הקריטית של ענישה ושלילת חירות. זה שומט את הבסיס לאמנה ולביטחון שהענישה תיעשה באופן אובייקטיבי וללא אינטרס כספי."
+                    ]
+                }
+            ]
+        };
+
+        let currentState = {
+            topicId: '', topicName: '',
+            summaryData: [], flashcardsData: [], questionsData: [],
+            fcDeck: [], fcReviewDeck: [], fcCurrentIndex: 0, fcIsFlipped: false
+        };
+
+        // Navigation
+        function startLearning() {
+            const selectEl = document.getElementById('topic-select');
+            const topicId = selectEl.value;
+            const topicName = selectEl.options[selectEl.selectedIndex].text;
+
+            document.getElementById('selection-screen').style.display = 'none';
+            document.getElementById('learning-screen').style.display = 'block';
+            document.getElementById('current-focus-title').innerText = `מתמקד ב: ${topicName}`;
+
+            filterDataForTopic(topicId, topicName);
+            showModule('understanding');
+        }
+
+        function backToSelection() {
+            document.getElementById('learning-screen').style.display = 'none';
+            document.getElementById('selection-screen').style.display = 'block';
+        }
+
+        function showModule(moduleId) {
+            document.querySelectorAll('.module').forEach(m => m.classList.remove('active'));
+            document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+            document.getElementById(moduleId).classList.add('active');
+            document.getElementById(`btn-${moduleId}`).classList.add('active');
+
+            if (moduleId === 'understanding') renderSummary();
+            if (moduleId === 'memorization') initFlashcards();
+            if (moduleId === 'practice') preparePractice();
+        }
+
+        function filterDataForTopic(topicId, topicName) {
+            currentState.topicId = topicId;
+            currentState.topicName = topicName;
+            
+            currentState.summaryData = [];
+            if (topicId === 'all' || topicId === 'all_articles') {
+                currentState.summaryData = currentState.summaryData.concat(appData.articles.map(a => ({type: 'article', data: a})));
+            } else if (appData.articles.find(a => a.id === topicId)) {
+                currentState.summaryData.push({type: 'article', data: appData.articles.find(a => a.id === topicId)});
+            }
+
+            if (topicId === 'all' || topicId === 'all_thinkers') {
+                currentState.summaryData = currentState.summaryData.concat(appData.thinkers.map(t => ({type: 'thinker', data: t})));
+            } else if (appData.thinkers.find(t => t.id === topicId)) {
+                currentState.summaryData.push({type: 'thinker', data: appData.thinkers.find(t => t.id === topicId)});
+            }
+
+            currentState.flashcardsData = appData.flashcards.filter(fc => fc.topics.includes(topicId));
+            currentState.questionsData = appData.questions.filter(q => q.topics.includes(topicId));
+        }
+
+        // --- Module 1: Summary ---
+        function renderSummary() {
+            const container = document.getElementById('summary-container');
+            const emptyMsg = document.getElementById('understanding-empty');
+            const compCard = document.getElementById('comparison-card');
+            
+            container.innerHTML = '';
+            
+            // Show comparison tool only if looking at multiple thinkers
+            if (currentState.topicId === 'all' || currentState.topicId === 'all_thinkers') {
+                compCard.style.display = 'block';
+                initComparisonTool();
+            } else {
+                compCard.style.display = 'none';
+            }
+            
+            if (currentState.summaryData.length === 0) {
+                emptyMsg.style.display = 'block';
+                return;
+            }
+            emptyMsg.style.display = 'none';
+
+            let html = '';
+            currentState.summaryData.forEach(item => {
+                if (item.type === 'article') {
+                    html += `<div class="item-container"><h3>${item.data.title}</h3>`;
+                    item.data.qas.forEach(qa => {
+                        html += `<div class="qa-item"><h4>${qa.q}</h4><p>${qa.a}</p></div>`;
+                    });
+                    
+                    if (item.data.fullSummary) {
+                        html += `
+                        <button class="btn btn-outline" style="margin-top: 0.5rem;" onclick="toggleFullSummary('${item.data.id}')">הצג תקציר מלא / הסתר</button>
+                        <div id="full-summary-${item.data.id}" class="full-summary-content">${item.data.fullSummary}</div>
+                        `;
+                    }
+                    html += `</div>`;
+                } else if (item.type === 'thinker') {
+                    html += `<div class="item-container"><h3>ההוגה: ${item.data.name}</h3>`;
+                    item.data.attributes.forEach(attr => {
+                        html += `<div class="qa-item"><h4>${attr.k}</h4><p>${attr.v}</p></div>`;
+                    });
+                    if (item.data.fullSummary) {
+                        html += `
+                        <button class="btn btn-outline" style="margin-top: 0.5rem;" onclick="toggleFullSummary('${item.data.id}')">הצג סיכום תורת ההוגה / הסתר</button>
+                        <div id="full-summary-${item.data.id}" class="full-summary-content">${item.data.fullSummary}</div>
+                        `;
+                    }
+                    html += `</div>`;
+                }
+            });
+            container.innerHTML = html;
+        }
+
+        function toggleFullSummary(id) {
+            const el = document.getElementById(`full-summary-${id}`);
+            if (el.style.display === 'block') {
+                el.style.display = 'none';
+            } else {
+                el.style.display = 'block';
+            }
+        }
+
+        // Comparison Tool Logic
+        const axesNames = {
+            "regime": "המשטר הרצוי",
+            "property": "יחס לקניין ומשפחה",
+            "humanNature": "תפיסת טבע האדם",
+            "stateOrigin": "תהליך התהוות המדינה",
+            "statePurpose": "תכלית המדינה",
+            "religion": "יחס לדת ולמוסר",
+            "virtu": "המידה הטובה / השליט",
+            "stateOfNature": "מצב הטבע (טרום-מדינה)",
+            "contract": "מהות האמנה החברתית",
+            "rights": "הזכויות הטבעיות",
+            "generalWill": "מושג הרצון הכללי",
+            "spheres": "מעגלי ההתייחסות בחברה"
+        };
+
+        function initComparisonTool() {
+            const t1 = document.getElementById('thinker1');
+            t1.innerHTML = '<option value="">-- בחר הוגה --</option>';
+            appData.thinkers.forEach(t => {
+                t1.innerHTML += `<option value="${t.id}">${t.name}</option>`;
+            });
+        }
+
+        function updateThinker2Options() {
+            const t1Id = document.getElementById('thinker1').value;
+            const t2 = document.getElementById('thinker2');
+            const resultDiv = document.getElementById('comparison-result');
+            resultDiv.innerHTML = ''; 
+
+            if (!t1Id) {
+                t2.innerHTML = '<option value="">-- בחר הוגה ראשון קודם --</option>';
+                t2.disabled = true;
+                return;
+            }
+
+            const t1 = appData.thinkers.find(t => t.id === t1Id);
+            const t1Keys = t1.attributes.map(a => a.k);
+            
+            t2.innerHTML = '<option value="">-- בחר הוגה להשוואה --</option>';
+            t2.disabled = false;
+            
+            let matchCount = 0;
+            appData.thinkers.forEach(t => {
+                if (t.id !== t1Id) {
+                    const sharedAxes = t.attributes.filter(a => t1Keys.includes(a.k));
+                    if (sharedAxes.length > 0) {
+                        t2.innerHTML += `<option value="${t.id}">${t.name} (${sharedAxes.length} צירים משותפים)</option>`;
+                        matchCount++;
+                    }
+                }
+            });
+
+            if (matchCount === 0) {
+                t2.innerHTML = '<option value="">-- אין הוגים ברי-השוואה להוגה זה --</option>';
+                t2.disabled = true;
+            }
+        }
+
+        function renderComparison() {
+            const t1Id = document.getElementById('thinker1').value;
+            const t2Id = document.getElementById('thinker2').value;
+            const resultDiv = document.getElementById('comparison-result');
+            
+            if (!t1Id || !t2Id) { resultDiv.innerHTML = ''; return; }
+
+            const t1 = appData.thinkers.find(t => t.id === t1Id);
+            const t2 = appData.thinkers.find(t => t.id === t2Id);
+            const t1Keys = t1.attributes.map(a => a.k);
+            const sharedKeys = t2.attributes.filter(a => t1Keys.includes(a.k)).map(a => a.k);
+
+            let tableHTML = `
+                <table class="comparison-table">
+                    <tr>
+                        <th>נושא ההשוואה</th>
+                        <th>${t1.name}</th>
+                        <th>${t2.name}</th>
+                    </tr>
+            `;
+
+            sharedKeys.forEach(key => {
+                const val1 = t1.attributes.find(a => a.k === key).v;
+                const val2 = t2.attributes.find(a => a.k === key).v;
+                tableHTML += `
+                    <tr>
+                        <td style="font-weight: bold; background-color: var(--secondary);">${key}</td>
+                        <td>${val1}</td>
+                        <td>${val2}</td>
+                    </tr>
+                `;
+            });
+
+            tableHTML += '</table>';
+            resultDiv.innerHTML = tableHTML;
+        }
+
+        // --- Module 2: Flashcards ---
+        function initFlashcards() {
+            document.getElementById('fc-active-state').style.display = 'flex';
+            document.getElementById('fc-empty-state').style.display = 'none';
+
+            if (currentState.flashcardsData.length === 0) {
+                document.getElementById('fc-active-state').style.display = 'none';
+                document.getElementById('fc-empty-state').innerHTML = `<h2>אין כרטיסיות לנושא זה</h2><p>בחר נושא רחב יותר.</p>`;
+                document.getElementById('fc-empty-state').style.display = 'block';
+                return;
+            }
+
+            currentState.fcDeck = [...currentState.flashcardsData].sort(() => Math.random() - 0.5);
+            currentState.fcReviewDeck = [];
+            currentState.fcCurrentIndex = 0;
+            loadCard();
+        }
+
+        function loadCard() {
+            if (currentState.fcCurrentIndex >= currentState.fcDeck.length) {
+                if (currentState.fcReviewDeck.length > 0) {
+                    currentState.fcDeck = [...currentState.fcReviewDeck].sort(() => Math.random() - 0.5);
+                    currentState.fcReviewDeck = [];
+                    currentState.fcCurrentIndex = 0;
+                } else {
+                    document.getElementById('fc-active-state').style.display = 'none';
+                    document.getElementById('fc-empty-state').innerHTML = `
+                        <h2>מעולה! סיימת לעבור על כל המושגים בנושא.</h2>
+                        <p>חזרה פעילה היא המפתח להצלחה בבחינה.</p>
+                        <button class="btn btn-large btn-outline" onclick="initFlashcards()" style="margin-top: 1rem;">התחל את הסט מחדש</button>
+                    `;
+                    document.getElementById('fc-empty-state').style.display = 'block';
+                    return;
+                }
+            }
+
+            const card = currentState.fcDeck[currentState.fcCurrentIndex];
+            const flashcardEl = document.getElementById('flashcard');
+            
+            flashcardEl.style.transition = "none";
+            flashcardEl.classList.remove('is-flipped');
+            currentState.fcIsFlipped = false;
+            
+            setTimeout(() => {
+                flashcardEl.style.transition = "transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1)";
+                document.getElementById('fc-term').innerText = card.term;
+                document.getElementById('fc-term-back').innerText = card.term;
+                document.getElementById('fc-def').innerText = card.definition;
+                
+                document.getElementById('fc-btn-reveal').style.display = 'flex';
+                document.getElementById('fc-btn-actions').style.display = 'none';
+                
+                let remaining = currentState.fcDeck.length - currentState.fcCurrentIndex;
+                document.getElementById('card-counter').innerText = 
+                    `מושג ${currentState.fcCurrentIndex + 1} מתוך ${currentState.fcDeck.length} בחפיסה זו (עוד ${currentState.fcReviewDeck.length} ממתינים לסיבוב הבא)`;
+            }, 50);
+        }
+
+        function revealCard() {
+            document.getElementById('flashcard').classList.add('is-flipped');
+            currentState.fcIsFlipped = true;
+            document.getElementById('fc-btn-reveal').style.display = 'none';
+            document.getElementById('fc-btn-actions').style.display = 'flex';
+        }
+
+        function markCard(known) {
+            if (!known) { currentState.fcReviewDeck.push(currentState.fcDeck[currentState.fcCurrentIndex]); }
+            currentState.fcCurrentIndex++;
+            loadCard();
+        }
+
+        // --- Module 3: Practice ---
+        let currentQuestion = null;
+
+        function preparePractice() {
+            const emptyMsg = document.getElementById('practice-empty');
+            const contentDiv = document.getElementById('practice-content');
+            
+            if (currentState.questionsData.length === 0) {
+                emptyMsg.style.display = 'block';
+                contentDiv.style.display = 'none';
+            } else {
+                emptyMsg.style.display = 'none';
+                contentDiv.style.display = 'block';
+            }
+            document.getElementById('practice-area').style.display = 'none';
+            document.getElementById('student-answer').value = '';
+        }
+
+        function generateQuestion() {
+            document.getElementById('practice-area').style.display = 'block';
+            document.getElementById('rubric-area').style.display = 'none';
+            document.getElementById('student-answer').value = '';
+            document.getElementById('feedback-msg').innerText = '';
+            document.getElementById('check-btn').disabled = false;
+            
+            let randomIndex;
+            do {
+                randomIndex = Math.floor(Math.random() * currentState.questionsData.length);
+            } while (currentState.questionsData.length > 1 && currentState.questionsData[randomIndex] === currentQuestion);
+            
+            currentQuestion = currentState.questionsData[randomIndex];
+            
+            document.getElementById('question-meta').innerText = currentQuestion.meta;
+            document.getElementById('question-text').innerText = currentQuestion.text;
+        }
+
+        function showRubric() {
+            if (!currentQuestion) return;
+            document.getElementById('check-btn').disabled = true;
+            
+            const rubricDiv = document.getElementById('rubric-area');
+            const itemsDiv = document.getElementById('rubric-items');
+            
+            itemsDiv.innerHTML = '';
+            currentQuestion.rubric.forEach((item, index) => {
+                itemsDiv.innerHTML += `
+                    <div class="rubric-item">
+                        <input type="checkbox" id="rubric-${index}" onchange="checkCompletion()">
+                        <label for="rubric-${index}">${item}</label>
+                    </div>
+                `;
+            });
+            rubricDiv.style.display = 'block';
+        }
+        
+        function checkCompletion() {
+            const checkboxes = document.querySelectorAll('.rubric-item input[type="checkbox"]');
+            let allChecked = true;
+            checkboxes.forEach(cb => { if (!cb.checked) allChecked = false; });
+            
+            const msgDiv = document.getElementById('feedback-msg');
+            if (allChecked) {
+                msgDiv.innerText = "כל הכבוד! ענית על כל חלקי השאלה הנדרשים לפי המחוון. המשך כך!";
+            } else {
+                msgDiv.innerText = "";
+            }
+        }
+    </script>
+</body>
+</html>
