@@ -819,6 +819,58 @@ function checkComp() {
     cbs.forEach(cb => { if (!cb.checked) ok = false; });
     document.getElementById('feedback-msg').innerText = ok ? "כל הכבוד! נראה שהתייחסת לכל חלקי החובה לפי המחוון." : "";
 }
+    // --- תיקון מודול השוואת ההוגים (גישור שמות הפונקציות) ---
+
+window.updateThinker2Options = function() {
+    const t1Id = document.getElementById('thinker1').value;
+    const t2 = document.getElementById('thinker2');
+    if (!t1Id) { 
+        t2.innerHTML = '<option value="">-- בחר הוגה ראשון קודם --</option>'; 
+        t2.disabled = true; 
+        document.getElementById('comparison-result').innerHTML = '';
+        return; 
+    }
+    
+    const t1Keys = appData.thinkers.find(t => t.id === t1Id).attributes.map(a => a.k);
+    t2.innerHTML = '<option value="">-- בחר הוגה להשוואה --</option>';
+    t2.disabled = false;
+    
+    appData.thinkers.forEach(t => {
+        if (t.id !== t1Id && t.attributes.some(a => t1Keys.includes(a.k))) {
+            t2.innerHTML += `<option value="${t.id}">${t.name}</option>`;
+        }
+    });
+    document.getElementById('comparison-result').innerHTML = '';
+};
+
+window.renderComparison = function() {
+    const t1Id = document.getElementById('thinker1').value;
+    const t2Id = document.getElementById('thinker2').value;
+    const res = document.getElementById('comparison-result');
+    
+    if (!t1Id || !t2Id) { 
+        res.innerHTML = ''; 
+        return; 
+    }
+    
+    const t1 = appData.thinkers.find(t => t.id === t1Id);
+    const t2 = appData.thinkers.find(t => t.id === t2Id);
+    const t1Keys = t1.attributes.map(a => a.k);
+    const shared = t2.attributes.filter(a => t1Keys.includes(a.k)).map(a => a.k);
+    
+    let html = `<table class="comparison-table"><tr><th>נושא ההשוואה</th><th>${t1.name}</th><th>${t2.name}</th></tr>`;
+    shared.forEach(k => {
+        const val1 = t1.attributes.find(a => a.k === k).v;
+        const val2 = t2.attributes.find(a => a.k === k).v;
+        html += `<tr><td style="font-weight:bold;background:var(--secondary);">${axesNames[k]||k}</td><td>${val1}</td><td>${val2}</td></tr>`;
+    });
+    
+    res.innerHTML = html + '</table>';
+};
+
+// קישור השמות המקוצרים למקרה שהדפדפן קורא להם
+window.updateThinker2 = window.updateThinker2Options;
+window.renderComp = window.renderComparison;
 </script>
 </body>
 </html>
